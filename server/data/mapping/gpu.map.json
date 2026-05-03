@@ -1,0 +1,146 @@
+[
+  {
+    "_id": "69e4cf4415ff80f2baa6cbaf",
+    "type": "GPU",
+    "brand": "AMD",
+    "model": "RX 6400",
+    "name": "AMD Radeon RX 6400 4GB",
+    "estimatedPrice": 13500,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4ab",
+    "type": "GPU",
+    "brand": "AMD",
+    "model": "RX 6500 XT",
+    "name": "AMD Radeon RX 6500 XT 4GB",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4ac",
+    "type": "GPU",
+    "brand": "AMD",
+    "model": "RX 6600",
+    "name": "AMD Radeon RX 6600 8GB",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4ad",
+    "type": "GPU",
+    "brand": "AMD",
+    "model": "RX 6800 XT",
+    "name": "AMD Radeon RX 6800 XT 16GB",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbb1",
+    "type": "GPU",
+    "brand": "AMD",
+    "model": "RX 7700 XT",
+    "name": "AMD Radeon RX 7700 XT 12GB",
+    "estimatedPrice": 48000,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4ae",
+    "type": "GPU",
+    "brand": "AMD",
+    "model": "RX 7900 XTX",
+    "name": "AMD Radeon RX 7900 XTX 24GB",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4af",
+    "type": "GPU",
+    "brand": "Intel",
+    "model": "Arc A750",
+    "name": "Intel Arc A750 8GB",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbb3",
+    "type": "GPU",
+    "brand": "Intel",
+    "model": "Arc A770",
+    "name": "Intel Arc A770 16GB",
+    "estimatedPrice": 33000,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbae",
+    "type": "GPU",
+    "brand": "NVIDIA",
+    "model": "GTX 1630",
+    "name": "NVIDIA GeForce GTX 1630 4GB",
+    "estimatedPrice": 12000,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4a6",
+    "type": "GPU",
+    "brand": "NVIDIA",
+    "model": "GTX 1650",
+    "name": "NVIDIA GeForce GTX 1650 4GB",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4a7",
+    "type": "GPU",
+    "brand": "NVIDIA",
+    "model": "RTX 3050",
+    "name": "NVIDIA GeForce RTX 3050 8GB",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4a8",
+    "type": "GPU",
+    "brand": "NVIDIA",
+    "model": "RTX 3060",
+    "name": "NVIDIA GeForce RTX 3060 12GB",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbb0",
+    "type": "GPU",
+    "brand": "NVIDIA",
+    "model": "RTX 4060 Ti",
+    "name": "NVIDIA GeForce RTX 4060 Ti 16GB",
+    "estimatedPrice": 46000,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4a9",
+    "type": "GPU",
+    "brand": "NVIDIA",
+    "model": "RTX 4070",
+    "name": "NVIDIA GeForce RTX 4070 12GB",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbb2",
+    "type": "GPU",
+    "brand": "NVIDIA",
+    "model": "RTX 4080 Super",
+    "name": "NVIDIA GeForce RTX 4080 Super 16GB",
+    "estimatedPrice": 115000,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4aa",
+    "type": "GPU",
+    "brand": "NVIDIA",
+    "model": "RTX 4090",
+    "name": "NVIDIA GeForce RTX 4090 24GB",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  }
+]

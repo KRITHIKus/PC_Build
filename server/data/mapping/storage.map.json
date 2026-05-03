@@ -1,0 +1,110 @@
+[
+  {
+    "_id": "69e4c8406a81809a5f89c4c4",
+    "type": "Storage",
+    "brand": "Crucial",
+    "model": "BX500 500GB",
+    "name": "Crucial BX500 500GB SATA SSD",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4c2",
+    "type": "Storage",
+    "brand": "Crucial",
+    "model": "P3 Plus 1TB",
+    "name": "Crucial P3 Plus 1TB NVMe SSD",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbbd",
+    "type": "Storage",
+    "brand": "Kingston",
+    "model": "NV2 1TB",
+    "name": "Kingston NV2 1TB NVMe SSD",
+    "estimatedPrice": 4800,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4c5",
+    "type": "Storage",
+    "brand": "Samsung",
+    "model": "870 EVO 1TB",
+    "name": "Samsung 870 EVO 1TB SATA SSD",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4c1",
+    "type": "Storage",
+    "brand": "Samsung",
+    "model": "980 1TB",
+    "name": "Samsung 980 1TB NVMe SSD",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4c3",
+    "type": "Storage",
+    "brand": "Samsung",
+    "model": "990 PRO 2TB",
+    "name": "Samsung 990 PRO 2TB NVMe SSD",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4c6",
+    "type": "Storage",
+    "brand": "Seagate",
+    "model": "Barracuda 2TB",
+    "name": "Seagate Barracuda 2TB HDD",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbbf",
+    "type": "Storage",
+    "brand": "Seagate",
+    "model": "Barracuda 6TB",
+    "name": "Seagate Barracuda 6TB HDD",
+    "estimatedPrice": 9500,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbbc",
+    "type": "Storage",
+    "brand": "WD",
+    "model": "Black SN850X 1TB",
+    "name": "WD Black SN850X 1TB NVMe SSD",
+    "estimatedPrice": 10500,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4c7",
+    "type": "Storage",
+    "brand": "WD",
+    "model": "Blue 4TB",
+    "name": "WD Blue 4TB HDD",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4c0",
+    "type": "Storage",
+    "brand": "WD",
+    "model": "Blue SN570 500GB",
+    "name": "WD Blue SN570 500GB NVMe SSD",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbbe",
+    "type": "Storage",
+    "brand": "WD",
+    "model": "Green 480GB",
+    "name": "WD Green 480GB SATA SSD",
+    "estimatedPrice": 2400,
+    "currency": "INR"
+  }
+]

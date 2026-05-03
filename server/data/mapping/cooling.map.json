@@ -1,0 +1,83 @@
+[
+  {
+    "_id": "69e4c8406a81809a5f89c4d6",
+    "type": "Cooling",
+    "brand": "Cooler Master",
+    "model": "Hyper 212 Black",
+    "name": "Cooler Master Hyper 212 Black Edition",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4d5",
+    "type": "Cooling",
+    "brand": "Cooler Master",
+    "model": "Hyper H410R",
+    "name": "Cooler Master Hyper H410R",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4d8",
+    "type": "Cooling",
+    "brand": "Corsair",
+    "model": "H100x",
+    "name": "Corsair H100x 240mm AIO",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4d4",
+    "type": "Cooling",
+    "brand": "Deepcool",
+    "model": "AG400",
+    "name": "Deepcool AG400 Air Cooler",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4d7",
+    "type": "Cooling",
+    "brand": "Deepcool",
+    "model": "AK620",
+    "name": "Deepcool AK620 Dual Tower",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbc6",
+    "type": "Cooling",
+    "brand": "Deepcool",
+    "model": "GAMMAXX 400 V2",
+    "name": "Deepcool GAMMAXX 400 V2 Air Cooler",
+    "estimatedPrice": 1500,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbc8",
+    "type": "Cooling",
+    "brand": "Lian Li",
+    "model": "Galahad II 360",
+    "name": "Lian Li Galahad II 360mm AIO",
+    "estimatedPrice": 14000,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4d9",
+    "type": "Cooling",
+    "brand": "NZXT",
+    "model": "Kraken X73",
+    "name": "NZXT Kraken X73 360mm AIO",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbc7",
+    "type": "Cooling",
+    "brand": "Noctua",
+    "model": "NH-D15",
+    "name": "Noctua NH-D15 Premium Air Cooler",
+    "estimatedPrice": 9000,
+    "currency": "INR"
+  }
+]

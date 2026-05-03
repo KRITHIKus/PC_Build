@@ -1,0 +1,110 @@
+[
+  {
+    "_id": "69e4c8406a81809a5f89c4b5",
+    "type": "RAM",
+    "brand": "Corsair",
+    "model": "Vengeance 16GB DDR5",
+    "name": "Corsair Vengeance 16GB (2x8GB) DDR5 5200",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4b1",
+    "type": "RAM",
+    "brand": "Corsair",
+    "model": "Vengeance LPX 16GB",
+    "name": "Corsair Vengeance LPX 16GB (2x8GB) DDR4 3200",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbb7",
+    "type": "RAM",
+    "brand": "Corsair",
+    "model": "Vengeance RGB 32GB DDR5 6000",
+    "name": "Corsair Vengeance RGB 32GB (2x16GB) DDR5 6000MHz",
+    "estimatedPrice": 14500,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4b3",
+    "type": "RAM",
+    "brand": "Corsair",
+    "model": "Vengeance RGB Pro 32GB",
+    "name": "Corsair Vengeance RGB Pro 32GB (2x16GB) DDR4 3600",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbb4",
+    "type": "RAM",
+    "brand": "Crucial",
+    "model": "CT16G4DFRA32A",
+    "name": "Crucial 16GB (2x8GB) DDR4 3200MHz",
+    "estimatedPrice": 3200,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4b0",
+    "type": "RAM",
+    "brand": "Crucial",
+    "model": "CT8G4DFRA32A",
+    "name": "Crucial 8GB DDR4 3200MHz",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4b6",
+    "type": "RAM",
+    "brand": "G.Skill",
+    "model": "Ripjaws S5 32GB",
+    "name": "G.Skill Ripjaws S5 32GB (2x16GB) DDR5 6000",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4b2",
+    "type": "RAM",
+    "brand": "G.Skill",
+    "model": "Ripjaws V 16GB",
+    "name": "G.Skill Ripjaws V 16GB (2x8GB) DDR4 3600",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbb5",
+    "type": "RAM",
+    "brand": "G.Skill",
+    "model": "Trident Z RGB 32GB DDR4 3600",
+    "name": "G.Skill Trident Z RGB 32GB (2x16GB) DDR4 3600MHz",
+    "estimatedPrice": 9500,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4cf4415ff80f2baa6cbb6",
+    "type": "RAM",
+    "brand": "Kingston",
+    "model": "Fury Beast 16GB DDR5 5200",
+    "name": "Kingston Fury Beast 16GB (2x8GB) DDR5 5200MHz",
+    "estimatedPrice": 5200,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4b4",
+    "type": "RAM",
+    "brand": "Kingston",
+    "model": "Fury Beast 32GB",
+    "name": "Kingston Fury Beast 32GB (2x16GB) DDR4 3200",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  },
+  {
+    "_id": "69e4c8406a81809a5f89c4b7",
+    "type": "RAM",
+    "brand": "Kingston",
+    "model": "Fury Beast RGB 32GB",
+    "name": "Kingston Fury Beast RGB 32GB (2x16GB) DDR5 6000",
+    "estimatedPrice": 0,
+    "currency": "INR"
+  }
+]
