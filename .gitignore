@@ -26,3 +26,10 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Ignore sensitive env file
+server/config/env.js
+
+# Ignore data and scripts folders
+server/data/
+server/scripts/
