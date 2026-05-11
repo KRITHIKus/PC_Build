@@ -42,11 +42,14 @@ const componentSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+
+    // ✅ IMPORTANT: keep but FIX it
     estimatedPrice: {
       type: Number,
-      required: [true, "Estimated price is required"],
+      default: 0, // 🔥 allows creation without price
       min: [0, "Price cannot be negative"],
     },
+
     currency: {
       type: String,
       default: "INR",
@@ -77,7 +80,7 @@ const componentSchema = new mongoose.Schema(
 
 componentSchema.index({ type: 1 });
 componentSchema.index({ brand: 1 });
-componentSchema.index({ estimatedPrice: 1 });
+componentSchema.index({ estimatedPrice: 1 }); // keep this (useful for sorting)
 componentSchema.index({ name: "text", model: "text", brand: "text" });
 
 export const VALID_COMPONENT_TYPES = COMPONENT_TYPES;

@@ -87,8 +87,8 @@ export function ComponentPricing({ componentId, estimatedPrice, region: regionPr
   const { data, isLoading, isError, refetch } = useGetLatestPriceQuery(
     { componentId, region },
     { skip: !componentId }
+    
   )
-
   // Normalise: API may return { price, sourceName, checkedAt } nested or flat
   const priceData = data?.pricing ?? data?.data ?? data
 

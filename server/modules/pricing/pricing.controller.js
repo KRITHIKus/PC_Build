@@ -8,9 +8,11 @@ export const create = asyncHandler(async (req, res) => {
 });
 
 export const latestPrice = asyncHandler(async (req, res) => {
-  const record = await getLatestPrice(req.params.componentId, req.query);
+  const record = await getLatestPrice(req.params.componentId, req.query.region);
   sendSuccess(res, 200, "Latest price fetched", record);
+
 });
+
 
 export const pricingHistory = asyncHandler(async (req, res) => {
   const { records, meta } = await getPricingHistory(req.params.componentId, req.query);

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   Cpu, Monitor, MemoryStick, CheckCircle2,
@@ -174,6 +175,7 @@ function UseTag({ label }) {
 /* ── Build Card ──────────────────────────────────────────────── */
 export function BuildCard({ build, index = 0, isSelected, onCompareToggle }) {
   const [expanded, setExpanded] = useState(false)
+ 
   if (!build) return null
 
   const {
@@ -188,6 +190,10 @@ export function BuildCard({ build, index = 0, isSelected, onCompareToggle }) {
     isFeatured,
     isDreamBuild,
   } = build
+
+const searchParams = useSearchParams()
+const lockedBuildId = searchParams.get('base')
+const isLockedBuild = lockedBuildId === _id
 
   const cpu = parts?.cpu?.name ?? null
   const gpu = parts?.gpu?.name ?? null
@@ -218,7 +224,7 @@ export function BuildCard({ build, index = 0, isSelected, onCompareToggle }) {
         className="relative flex flex-col rounded-2xl overflow-hidden h-full"
         style={{
           background: 'var(--surface-1)',
-          border: isSelected
+          border:(isSelected || isLockedBuild)
             ? '1px solid rgba(255,59,31,0.5)'
             : '1px solid var(--border)',
           boxShadow: isSelected
@@ -230,7 +236,9 @@ export function BuildCard({ build, index = 0, isSelected, onCompareToggle }) {
           boxShadow: isSelected
             ? '0 0 0 1px rgba(255,59,31,0.35), 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,59,31,0.15)'
             : '0 20px 60px rgba(0,0,0,0.55), 0 0 28px rgba(255,59,31,0.1)',
-          borderColor: isSelected ? 'rgba(255,59,31,0.55)' : 'rgba(255,59,31,0.3)',
+          borderColor: (isSelected || isLockedBuild)
+  ? 'rgba(255,59,31,0.55)'
+  : 'rgba(255,59,31,0.3)',
         }}
         transition={{ duration: 0.22 }}
       >
@@ -239,7 +247,7 @@ export function BuildCard({ build, index = 0, isSelected, onCompareToggle }) {
           style={{ background: 'linear-gradient(90deg,transparent,rgba(255,59,31,0.5),transparent)' }}
         />
 
-        {isSelected && (
+        {(isSelected || isLockedBuild) && (
           <div
             className="absolute inset-0 pointer-events-none rounded-2xl"
             style={{ background: 'rgba(255,59,31,0.04)' }}
@@ -342,12 +350,33 @@ export function BuildCard({ build, index = 0, isSelected, onCompareToggle }) {
             />
 
             <CardButton
-              label={isSelected ? 'Remove' : 'Compare'}
-              variant="secondary"
-              icon={GitCompare}
-              onClick={() => onCompareToggle?.(_id)}
+              label={
+    isLockedBuild
+      ? 'Base Build'
+      : isSelected
+        ? 'Remove'
+        : 'Compare'
+  }
+  variant="secondary"
+  icon={GitCompare}
+  disabled={isLockedBuild}
+  onClick={() => {
+    if (isLockedBuild) return
+    onCompareToggle?.(_id)
+  }}
             />
           </div>
+          {isLockedBuild && (
+  <div
+    className="mb-4 text-xs font-medium"
+    style={{
+      color: 'var(--red)',
+      fontFamily: 'var(--font-display)',
+    }}
+  >
+    Base build selected for comparison
+  </div>
+)}
         </div>
       </motion.div>
     </motion.div>

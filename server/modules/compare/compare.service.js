@@ -119,6 +119,161 @@ const buildSummary = (builds, priceComparison, insights) => {
   return parts.join(" ");
 };
 
+
+const buildComparisonResponse = (builds) => {
+  const buildData = builds.map((build) => {
+    const parts = build.parts ?? {}
+
+    const allComponents = [
+      parts.cpu,
+      parts.gpu,
+      parts.ram,
+      parts.motherboard,
+      parts.psu,
+      parts.cabinet,
+      parts.cooling,
+      ...(Array.isArray(parts.storage) ? parts.storage : []),
+    ].filter(Boolean)
+
+    const compatibility =
+      allComponents.length >= 2
+        ? checkBuildCompatibility(allComponents)
+        : build.compatibilityResult ?? null
+
+    return {
+      _id: build._id,
+      title: build.title,
+      journeyStatus: build.journeyStatus,
+      isFavorite: build.isFavorite,
+      isDreamBuild: build.isDreamBuild,
+      totalEstimatedPrice: build.totalEstimatedPrice,
+      currency: build.currency,
+      compatibility,
+      useCases: inferUseCases(build),
+      upgradeFlexibility: upgradeFlexibility(build),
+      psuHeadroom: getPsuHeadroom(build),
+    }
+  })
+
+  const sorted = [...buildData].sort(
+    (a, b) => a.totalEstimatedPrice - b.totalEstimatedPrice
+  )
+
+  const priceComparison = {
+    cheapest: {
+      title: sorted[0].title,
+      price: sorted[0].totalEstimatedPrice,
+    },
+    mostExpensive: {
+      title: sorted[sorted.length - 1].title,
+      price: sorted[sorted.length - 1].totalEstimatedPrice,
+    },
+    priceDifference:
+      sorted[sorted.length - 1].totalEstimatedPrice -
+      sorted[0].totalEstimatedPrice,
+
+    breakdown: buildData.map((b) => ({
+      title: b.title,
+      totalEstimatedPrice: b.totalEstimatedPrice,
+      currency: b.currency,
+    })),
+  }
+
+  const componentComparison = {}
+
+  for (const slot of SINGLE_SLOTS) {
+    componentComparison[slot] = builds.map((build) => ({
+      buildTitle: build.title,
+      component: slotSummary(build.parts?.[slot], slot),
+    }))
+  }
+
+  componentComparison.storage = builds.map((build) => ({
+    buildTitle: build.title,
+    components: Array.isArray(build.parts?.storage)
+      ? build.parts.storage.map((s) => slotSummary(s, "storage"))
+      : [],
+  }))
+
+  const compatibilityComparison = {
+    results: buildData.map((b) => ({
+      title: b.title,
+      valid: b.compatibility?.valid ?? null,
+      blockers: b.compatibility?.blockers ?? [],
+      warnings: b.compatibility?.warnings ?? [],
+    })),
+
+    hasBlockers: buildData.some(
+      (b) => b.compatibility?.valid === false
+    ),
+  }
+
+  const bestForGaming =
+    buildData
+      .filter((b) => b.useCases.includes("gaming"))
+      .sort((a, b) => {
+        const aVram =
+          builds.find((x) => x._id.toString() === a._id.toString())
+            ?.parts?.gpu?.specs?.vram ?? 0
+
+        const bVram =
+          builds.find((x) => x._id.toString() === b._id.toString())
+            ?.parts?.gpu?.specs?.vram ?? 0
+
+        return bVram - aVram
+      })[0]?.title ?? null
+
+  const bestForBudget = sorted[0].title
+  const bestForPerformance = sorted[sorted.length - 1].title
+
+  const bestForUpgrade =
+    buildData
+      .filter((b) => b.upgradeFlexibility === "good")
+      .sort(
+        (a, b) =>
+          (b.psuHeadroom?.headroomPercent ?? 0) -
+          (a.psuHeadroom?.headroomPercent ?? 0)
+      )[0]?.title ??
+    buildData.sort(
+      (a, b) =>
+        (b.psuHeadroom?.headroomPercent ?? 0) -
+        (a.psuHeadroom?.headroomPercent ?? 0)
+    )[0]?.title ??
+    null
+
+  const insights = {
+    bestForGaming,
+    bestForBudget,
+    bestForPerformance,
+    bestForUpgrade,
+
+    useCaseMap: buildData.map((b) => ({
+      title: b.title,
+      useCases: b.useCases,
+    })),
+
+    upgradeFlexibilityMap: buildData.map((b) => ({
+      title: b.title,
+      upgradeFlexibility: b.upgradeFlexibility,
+    })),
+  }
+
+  const summary = buildSummary(
+    buildData,
+    priceComparison,
+    insights
+  )
+
+  return {
+    builds: buildData,
+    priceComparison,
+    componentComparison,
+    compatibility: compatibilityComparison,
+    insights,
+    summary,
+  }
+}
+
 // ─── Main Service ─────────────────────────────────────────────────────────────
 
 export const compareBuilds = async (userId, buildIds) => {
@@ -267,16 +422,22 @@ export const compareBuilds = async (userId, buildIds) => {
 };
 export const compareFeaturedBuilds = async (buildIds) => {
   if (!buildIds || !Array.isArray(buildIds) || buildIds.length < 2) {
-    throw new AppError("Provide at least 2 featured build IDs to compare", 400);
+    throw new AppError(
+      "Provide at least 2 featured build IDs to compare",
+      400
+    )
   }
 
   if (buildIds.length > 4) {
-    throw new AppError("Maximum 4 featured builds can be compared at once", 400);
+    throw new AppError(
+      "Maximum 4 featured builds can be compared at once",
+      400
+    )
   }
 
   for (const id of buildIds) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new AppError(`Invalid build ID: ${id}`, 400);
+      throw new AppError(`Invalid build ID: ${id}`, 400)
     }
   }
 
@@ -292,148 +453,75 @@ export const compareFeaturedBuilds = async (buildIds) => {
     { path: "parts.psu" },
     { path: "parts.cabinet" },
     { path: "parts.cooling" },
-  ]);
+  ])
 
   if (builds.length !== buildIds.length) {
-    throw new AppError("One or more builds are not public featured builds", 403);
+    throw new AppError(
+      "One or more builds are not public featured builds",
+      403
+    )
   }
 
-  const buildData = builds.map((build) => {
-    const parts = build.parts ?? {};
+  return buildComparisonResponse(builds)
+}
 
-    const allComponents = [
-      parts.cpu,
-      parts.gpu,
-      parts.ram,
-      parts.motherboard,
-      parts.psu,
-      parts.cabinet,
-      parts.cooling,
-      ...(Array.isArray(parts.storage) ? parts.storage : []),
-    ].filter(Boolean);
-
-    const compatibility =
-      allComponents.length >= 2
-        ? checkBuildCompatibility(allComponents)
-        : build.compatibilityResult ?? null;
-
-    return {
-      _id: build._id,
-      title: build.title,
-      journeyStatus: build.journeyStatus,
-      isFavorite: build.isFavorite,
-      isDreamBuild: build.isDreamBuild,
-      totalEstimatedPrice: build.totalEstimatedPrice,
-      currency: build.currency,
-      compatibility,
-      useCases: inferUseCases(build),
-      upgradeFlexibility: upgradeFlexibility(build),
-      psuHeadroom: getPsuHeadroom(build),
-    };
-  });
-
-  const sorted = [...buildData].sort(
-    (a, b) => a.totalEstimatedPrice - b.totalEstimatedPrice
-  );
-
-  const priceComparison = {
-    cheapest: {
-      title: sorted[0].title,
-      price: sorted[0].totalEstimatedPrice,
-    },
-    mostExpensive: {
-      title: sorted[sorted.length - 1].title,
-      price: sorted[sorted.length - 1].totalEstimatedPrice,
-    },
-    priceDifference:
-      sorted[sorted.length - 1].totalEstimatedPrice - sorted[0].totalEstimatedPrice,
-    breakdown: buildData.map((b) => ({
-      title: b.title,
-      totalEstimatedPrice: b.totalEstimatedPrice,
-      currency: b.currency,
-    })),
-  };
-
-  const componentComparison = {};
-
-  for (const slot of SINGLE_SLOTS) {
-    componentComparison[slot] = builds.map((build) => ({
-      buildTitle: build.title,
-      component: slotSummary(build.parts?.[slot], slot),
-    }));
+export const compareHybridBuilds = async (
+  buildIds,
+  userId
+) => {
+  if (!buildIds || !Array.isArray(buildIds) || buildIds.length < 2) {
+    throw new AppError(
+      "Provide at least 2 build IDs to compare",
+      400
+    )
   }
 
-  componentComparison.storage = builds.map((build) => ({
-    buildTitle: build.title,
-    components: Array.isArray(build.parts?.storage)
-      ? build.parts.storage.map((s) => slotSummary(s, "storage"))
-      : [],
-  }));
+  if (buildIds.length > 4) {
+    throw new AppError(
+      "Maximum 4 builds can be compared at once",
+      400
+    )
+  }
 
-  const compatibilityComparison = {
-    results: buildData.map((b) => ({
-      title: b.title,
-      valid: b.compatibility?.valid ?? null,
-      blockers: b.compatibility?.blockers ?? [],
-      warnings: b.compatibility?.warnings ?? [],
-    })),
-    hasBlockers: buildData.some((b) => b.compatibility?.valid === false),
-  };
+  for (const id of buildIds) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new AppError(`Invalid build ID: ${id}`, 400)
+    }
+  }
 
-  const bestForGaming =
-    buildData
-      .filter((b) => b.useCases.includes("gaming"))
-      .sort((a, b) => {
-        const aVram =
-          builds.find((x) => x._id.toString() === a._id.toString())?.parts?.gpu
-            ?.specs?.vram ?? 0;
-        const bVram =
-          builds.find((x) => x._id.toString() === b._id.toString())?.parts?.gpu
-            ?.specs?.vram ?? 0;
-        return bVram - aVram;
-      })[0]?.title ?? null;
+  const builds = await Build.find({
+    _id: { $in: buildIds },
+  }).populate([
+    { path: "parts.cpu" },
+    { path: "parts.gpu" },
+    { path: "parts.ram" },
+    { path: "parts.motherboard" },
+    { path: "parts.storage" },
+    { path: "parts.psu" },
+    { path: "parts.cabinet" },
+    { path: "parts.cooling" },
+  ])
 
-  const bestForBudget = sorted[0].title;
-  const bestForPerformance = sorted[sorted.length - 1].title;
+  if (builds.length !== buildIds.length) {
+    throw new AppError(
+      "One or more builds were not found",
+      404
+    )
+  }
 
-  const bestForUpgrade =
-    buildData
-      .filter((b) => b.upgradeFlexibility === "good")
-      .sort(
-        (a, b) =>
-          (b.psuHeadroom?.headroomPercent ?? 0) -
-          (a.psuHeadroom?.headroomPercent ?? 0)
-      )[0]?.title ??
-    buildData.sort(
-      (a, b) =>
-        (b.psuHeadroom?.headroomPercent ?? 0) -
-        (a.psuHeadroom?.headroomPercent ?? 0)
-    )[0]?.title ??
-    null;
+  for (const build of builds) {
+    const isPublic = build.isFeatured === true
 
-  const insights = {
-    bestForGaming,
-    bestForBudget,
-    bestForPerformance,
-    bestForUpgrade,
-    useCaseMap: buildData.map((b) => ({
-      title: b.title,
-      useCases: b.useCases,
-    })),
-    upgradeFlexibilityMap: buildData.map((b) => ({
-      title: b.title,
-      upgradeFlexibility: b.upgradeFlexibility,
-    })),
-  };
+    const isOwner =
+      build.user?.toString() === userId.toString()
 
-  const summary = buildSummary(buildData, priceComparison, insights);
+    if (!isPublic && !isOwner) {
+      throw new AppError(
+        "You are not allowed to compare one or more selected builds",
+        403
+      )
+    }
+  }
 
-  return {
-    builds: buildData,
-    priceComparison,
-    componentComparison,
-    compatibility: compatibilityComparison,
-    insights,
-    summary,
-  };
-};
+  return buildComparisonResponse(builds)
+}

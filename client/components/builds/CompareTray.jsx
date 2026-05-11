@@ -3,10 +3,24 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { GitCompare, X } from 'lucide-react'
 
+import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+
+
+ 
 export function CompareTray({ selected = [], onClear }) {
+   const [showLimitMsg, setShowLimitMsg] = useState(false)
+   const searchParams= useSearchParams()
   const count   = selected.length
   const canComp = count >= 2
   const visible = count > 0
+  const maxLimit = count > 4
+  const ids = selected.map((item) => typeof item === 'string' ? item : item._id).join(',')
+  const hasBaseBuild = searchParams.get('base')
+  
+const compareHref = hasBaseBuild
+  ? `/compare?ids=${ids}&base=${hasBaseBuild}`
+  : `/compare?ids=${ids}`
 
   return (
     <AnimatePresence>
@@ -60,8 +74,7 @@ export function CompareTray({ selected = [], onClear }) {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-start">
-                {/* Clear */}
+<div className="relative flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-start">                {/* Clear */}
                 <button
                   type="button"
                   onClick={onClear}
@@ -79,28 +92,64 @@ export function CompareTray({ selected = [], onClear }) {
                 </button>
 
                 {/* Compare CTA */}
-                <motion.button
-                  type="button"
-                  disabled={!canComp}
-                  whileHover={canComp ? { scale: 1.03, boxShadow: '0 0 24px rgba(255,59,31,0.5)' } : {}}
-                  whileTap={canComp ? { scale: 0.97 } : {}}
-className="flex items-center justify-center gap-2 px-5 h-10 w-full sm:w-auto rounded-xl text-sm font-semibold transition-all duration-150"                  style={{
-                    background: canComp
-                      ? 'linear-gradient(135deg,#ff4d33,#ff3b1f,#e11d2e)'
-                      : 'rgba(255,59,31,0.2)',
-                    color:      canComp ? '#fff' : 'rgba(255,59,31,0.4)',
-                    fontFamily: 'var(--font-display)',
-                    cursor:     canComp ? 'pointer' : 'not-allowed',
-                    border:     'none',
-                  }}
-                >
-                  <GitCompare size={15} strokeWidth={2.2} />
-                  Compare Builds
-                </motion.button>
+               <motion.button
+  type="button"
+  disabled={!canComp}
+onClick={() => {
+  if (maxLimit) {
+    setShowLimitMsg(true)
+
+    setTimeout(() => {
+      setShowLimitMsg(false)
+    }, 5000)
+
+    return
+  }
+
+  if (!canComp) return
+
+  window.location.href = compareHref
+}}
+
+  whileHover={
+    canComp
+      ? { scale: 1.03, boxShadow: '0 0 24px rgba(255,59,31,0.5)' }
+      : {}
+  }
+  whileTap={canComp ? { scale: 0.97 } : {}}
+  className="flex items-center justify-center gap-2 px-5 h-10 w-full sm:w-auto rounded-xl text-sm font-semibold transition-all duration-150"
+  style={{
+    background: canComp
+      ? 'linear-gradient(135deg,#ff4d33,#ff3b1f,#e11d2e)'
+      : 'rgba(255,59,31,0.2)',
+    color: canComp ? '#fff' : 'rgba(255,59,31,0.4)',
+    fontFamily: 'var(--font-display)',
+    cursor: canComp ? 'pointer' : 'not-allowed',
+    border: 'none',
+  }}
+>
+  <GitCompare size={15} strokeWidth={2.2} />
+  Compare Builds
+</motion.button>
+<AnimatePresence>
+  {showLimitMsg && (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      className="absolute bottom-14 left-1/2 -translate-x-1/2sm:right-0 bg-black/90 text-xs px-3 py-2 rounded-lg border border-red-500/30"
+      style={{ color: 'var(--red)' }}
+    >
+      Maximum compare builds is 4 only
+    </motion.div>
+  )}
+</AnimatePresence>
               </div>
             </div>
           </div>
+          
         </motion.div>
+        
       )}
     </AnimatePresence>
   )

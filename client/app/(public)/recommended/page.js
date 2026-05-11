@@ -1,13 +1,17 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { AlertCircle, RefreshCw, PackageSearch } from 'lucide-react'
+import { AlertCircle, RefreshCw, PackageSearch, Info } from 'lucide-react'
 import { useGetFeaturedBuildsQuery } from '@/services/buildsApi'
 import { RecommendedHeader }         from '@/components/builds/RecommendedHeader'
 import { BuildFilters }              from '@/components/builds/BuildFilters'
 import { BuildCard }                 from '@/components/builds/BuildCard'
 import { CompareTray }               from '@/components/builds/CompareTray'
+
+const MAX_COMPARE = 4
+const MIN_COMPARE = 2
 
 /* ── Skeleton card ───────────────────────────────────────────── */
 function SkeletonCard() {
@@ -56,10 +60,8 @@ function EmptyState({ filter, onClear }) {
       >
         <PackageSearch size={28} style={{ color: 'var(--red)' }} strokeWidth={1.5} />
       </div>
-      <h3
-        className="text-xl font-semibold mb-2"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--text-1)' }}
-      >
+      <h3 className="text-xl font-semibold mb-2"
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--text-1)' }}>
         No builds found
       </h3>
       <p className="text-sm mb-6 max-w-xs" style={{ color: 'var(--text-2)' }}>
@@ -68,16 +70,9 @@ function EmptyState({ filter, onClear }) {
           : 'No recommended builds are available right now.'}
       </p>
       {filter !== 'all' && (
-        <button
-          onClick={onClear}
+        <button onClick={onClear}
           className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150"
-          style={{
-            background: 'rgba(255,59,31,0.1)',
-            border:     '1px solid rgba(255,59,31,0.25)',
-            color:      'var(--red)',
-            fontFamily: 'var(--font-display)',
-          }}
-        >
+          style={{ background: 'rgba(255,59,31,0.1)', border: '1px solid rgba(255,59,31,0.25)', color: 'var(--red)', fontFamily: 'var(--font-display)' }}>
           Show all builds
         </button>
       )}
@@ -99,27 +94,17 @@ function ErrorState({ onRetry }) {
       >
         <AlertCircle size={28} style={{ color: 'var(--red)' }} strokeWidth={1.5} />
       </div>
-      <h3
-        className="text-xl font-semibold mb-2"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--text-1)' }}
-      >
+      <h3 className="text-xl font-semibold mb-2"
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--text-1)' }}>
         Failed to load builds
       </h3>
       <p className="text-sm mb-6 max-w-xs" style={{ color: 'var(--text-2)' }}>
         Could not reach the server. Please check your connection and try again.
       </p>
-      <button
-        onClick={onRetry}
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150"
-        style={{
-          background: 'rgba(255,59,31,0.1)',
-          border:     '1px solid rgba(255,59,31,0.25)',
-          color:      'var(--red)',
-          fontFamily: 'var(--font-display)',
-        }}
-      >
-        <RefreshCw size={14} />
-        Retry
+      <button onClick={onRetry}
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
+        style={{ background: 'rgba(255,59,31,0.1)', border: '1px solid rgba(255,59,31,0.25)', color: 'var(--red)', fontFamily: 'var(--font-display)' }}>
+        <RefreshCw size={14} /> Retry
       </button>
     </motion.div>
   )
@@ -128,13 +113,9 @@ function ErrorState({ onRetry }) {
 /* ── Filter matching ─────────────────────────────────────────── */
 function matchesFilter(build, filter) {
   if (filter === 'all') return true
-
   const haystack = [
-    build.title        ?? '',
-    build.useCase      ?? '',
-    build.source       ?? '',
-    build.description  ?? '',
-    ...(build.tags ?? []),
+    build.title ?? '', build.useCase ?? '', build.source ?? '',
+    build.description ?? '', ...(build.tags ?? []),
   ].join(' ').toLowerCase()
 
   const map = {
@@ -144,65 +125,102 @@ function matchesFilter(build, filter) {
     office:  ['office', 'productivity', 'work', 'business', 'everyday', 'budget', 'smart'],
     dream:   ['dream', 'ultimate', 'flagship', 'extreme', 'no compromise', 'beast'],
   }
-
   const keywords = map[filter] ?? [filter]
   return keywords.some(kw => haystack.includes(kw))
 }
 
 /* ── Recommended Page ────────────────────────────────────────── */
 export default function RecommendedPage() {
-  const [activeFilter, setActiveFilter]   = useState('all')
-  const [selectedIds,  setSelectedIds]    = useState([])
+    const searchParams = useSearchParams()
 
-  const { data, isLoading, isError, refetch, isFetching } = useGetFeaturedBuildsQuery({
-    page: 1, limit: 50,
-  })
+  const baseBuildId = searchParams.get('base')
+  const [activeFilter, setActiveFilter] = useState('all')
+  const [selectedIds,  setSelectedIds]  = useState(baseBuildId ? [baseBuildId] : [])
+  const [showLimitMsg, setShowLimitMsg] = useState(false)
 
-  // Normalise — API may return { data: builds } or { builds } or array
+  const { data, isLoading, isError, refetch, isFetching } = useGetFeaturedBuildsQuery({ page: 1, limit: 50 })
+
   const allBuilds = useMemo(() => {
     if (!data) return []
-    if (Array.isArray(data))           return data
-    if (Array.isArray(data.data))      return data.data
-    if (Array.isArray(data.builds))    return data.builds
+    if (Array.isArray(data))        return data
+    if (Array.isArray(data.data))   return data.data
+    if (Array.isArray(data.builds)) return data.builds
     return []
   }, [data])
 
-  // Client-side filter
   const builds = useMemo(
     () => allBuilds.filter(b => matchesFilter(b, activeFilter)),
     [allBuilds, activeFilter]
   )
 
-  // Compare toggle
+  /* ── Compare toggle — max 4 ──────────────────────────────── */
   const handleCompareToggle = (id) => {
     setSelectedIds(prev => {
-      if (prev.includes(id)) return prev.filter(x => x !== id)
-      if (prev.length >= 4)  return prev   // max 4 in tray
+      // Remove if already selected
+      if (prev.includes(id)) {
+
+  // Prevent removing locked base build
+  if (id === baseBuildId) {
+    return prev
+  }
+
+  setShowLimitMsg(false)
+  return prev.filter(x => x !== id)
+}
+      // Block at max
+      if (prev.length >= MAX_COMPARE) {
+        setShowLimitMsg(true)
+        // Auto-hide after 3s
+        setTimeout(() => setShowLimitMsg(false), 3000)
+        return prev
+      }
+      setShowLimitMsg(false)
       return [...prev, id]
     })
   }
 
   const loading = isLoading || isFetching
 
+
+
   return (
     <div style={{ background: 'var(--bg)', paddingBottom: selectedIds.length > 0 ? '96px' : '0' }}>
 
-      {/* ── Header ─────────────────────────────────────────── */}
       <RecommendedHeader />
-
-      {/* ── Divider ────────────────────────────────────────── */}
       <div style={{ height: '1px', background: 'var(--border)' }} />
 
-      {/* ── Filters + Grid ─────────────────────────────────── */}
       <div className="container-app py-10 sm:py-14">
 
         {/* Filter bar */}
         <div className="mb-8 sm:mb-10">
           <BuildFilters
             active={activeFilter}
-            onChange={(val) => { setActiveFilter(val); setSelectedIds([]) }}
+            onChange={(val) => { setActiveFilter(val); setSelectedIds([]); setShowLimitMsg(false) }}
           />
         </div>
+
+        {/* Compare limit hint */}
+        <motion.div
+          initial={false}
+          animate={{ opacity: showLimitMsg ? 1 : 0, y: showLimitMsg ? 0 : -6 }}
+          transition={{ duration: 0.25 }}
+          className="mb-5"
+          style={{ pointerEvents: showLimitMsg ? 'auto' : 'none' }}
+          aria-live="polite"
+        >
+          <div
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm"
+            style={{
+              background: 'rgba(255,59,31,0.08)',
+              border:     '1px solid rgba(255,59,31,0.25)',
+              color:      'var(--red)',
+              fontFamily: 'var(--font-display)',
+            }}
+          >
+            <Info size={14} />
+            You can compare up to 4 builds at a time.
+          </div>
+        </motion.div>
 
         {/* Result count */}
         {!loading && !isError && allBuilds.length > 0 && (
@@ -221,19 +239,11 @@ export default function RecommendedPage() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-
-          {/* Loading skeletons */}
           {loading && Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
-
-          {/* Error */}
           {!loading && isError && <ErrorState onRetry={refetch} />}
-
-          {/* Empty */}
           {!loading && !isError && builds.length === 0 && (
             <EmptyState filter={activeFilter} onClear={() => setActiveFilter('all')} />
           )}
-
-          {/* Build cards */}
           {!loading && !isError && builds.map((build, i) => (
             <BuildCard
               key={build._id ?? i}
@@ -246,10 +256,13 @@ export default function RecommendedPage() {
         </div>
       </div>
 
-      {/* ── Compare tray ───────────────────────────────────── */}
+      {/* Compare tray */}
       <CompareTray
         selected={selectedIds}
-        onClear={() => setSelectedIds([])}
+        onClear={() => { setSelectedIds([]); setShowLimitMsg(false) }}
+        
+        minCompare={MIN_COMPARE}
+       
       />
     </div>
   )

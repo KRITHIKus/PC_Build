@@ -81,20 +81,22 @@ function CustomYTick({ x, y, payload }) {
 export function BuildAnalyticsChart({ parts = {} }) {
 
   const chartData = useMemo(() => {
-    const storageTotal = (parts.storage ?? []).reduce(
-      (sum, s) => sum + (s?.component?.estimatedPrice ?? 0), 0
-    )
+   const getPrice = (part) => Number(part?.estimatedPrice ?? 0)
 
-    const rows = [
-      { name: 'CPU',         value: parts.cpu?.component?.estimatedPrice         ?? 0 },
-      { name: 'GPU',         value: parts.gpu?.component?.estimatedPrice         ?? 0 },
-      { name: 'RAM',         value: parts.ram?.component?.estimatedPrice         ?? 0 },
-      { name: 'Motherboard', value: parts.motherboard?.component?.estimatedPrice ?? 0 },
-      { name: 'Storage',     value: storageTotal },
-      { name: 'PSU',         value: parts.psu?.component?.estimatedPrice         ?? 0 },
-      { name: 'Cabinet',     value: parts.cabinet?.component?.estimatedPrice     ?? 0 },
-      { name: 'Cooling',     value: parts.cooling?.component?.estimatedPrice     ?? 0 },
-    ]
+const storageTotal = Array.isArray(parts.storage)
+  ? parts.storage.reduce((sum, item) => sum + getPrice(item), 0)
+  : getPrice(parts.storage)
+
+const rows = [
+  { name: 'CPU', value: getPrice(parts.cpu) },
+  { name: 'GPU', value: getPrice(parts.gpu) },
+  { name: 'RAM', value: getPrice(parts.ram) },
+  { name: 'Motherboard', value: getPrice(parts.motherboard) },
+  { name: 'Storage', value: storageTotal },
+  { name: 'PSU', value: getPrice(parts.psu) },
+  { name: 'Cabinet', value: getPrice(parts.cabinet) },
+  { name: 'Cooling', value: getPrice(parts.cooling) },
+]
 
     return rows
   }, [parts])

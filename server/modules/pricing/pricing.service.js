@@ -4,11 +4,23 @@ import { AppError } from "../../utils/appError.js";
 import { paginate, paginateMeta } from "../../utils/pagination.js";
 
 export const createPricingRecord = async (data) => {
-  const { component, price, currency, country, region, sourceName, sourceUrl, checkedAt, disclaimer, notes } = data;
+  const {
+    component,
+    price,
+    currency,
+    country,
+    region,
+    sourceName,
+    sourceUrl,
+    checkedAt,
+    disclaimer,
+    notes,
+  } = data;
 
   const exists = await Component.exists({ _id: component });
   if (!exists) throw new AppError("Component not found", 404);
 
+  // ✅ Step 1: Create pricing record
   const record = await Pricing.create({
     component,
     price,
@@ -22,23 +34,48 @@ export const createPricingRecord = async (data) => {
     notes: notes ?? null,
   });
 
+  // 🔥 Step 2: SYNC COMPONENT PRICE (IMPORTANT)
+  await Component.findByIdAndUpdate(component, {
+    estimatedPrice: price,
+    currency: currency ?? 'INR'
+  });
+
   return record;
 };
 
-export const getLatestPrice = async (componentId, query = {}) => {
-  const exists = await Component.exists({ _id: componentId });
-  if (!exists) throw new AppError("Component not found", 404);
+export const getLatestPrice = async (component, region) => {
+  const normalizedRegion =
+    region && region.trim() !== '' ? region : null;
 
-  const filter = { component: componentId };
-  if (query.country) filter.country = query.country;
-  if (query.region) filter.region = query.region;
-  if (query.sourceName) filter.sourceName = new RegExp(query.sourceName, "i");
+  let record;
 
-  const record = await Pricing.findOne(filter)
-    .sort({ checkedAt: -1 })
-    .populate("component", "name brand model type estimatedPrice");
+  // ✅ If region is provided → STRICT match
+  if (normalizedRegion) {
+    record = await Pricing.findOne({
+      component,
+      region: normalizedRegion,
+    }).sort({ checkedAt: -1 });
 
-  if (!record) throw new AppError("No pricing data found for this component", 404);
+    // ❌ DO NOT fallback silently
+    if (!record) {
+      throw new AppError(
+        `No pricing data found for region: ${normalizedRegion}`,
+        404
+      );
+    }
+  } else {
+    // ✅ No region → global latest
+    record = await Pricing.findOne({ component }).sort({
+      checkedAt: -1,
+    });
+
+    if (!record) {
+      throw new AppError(
+        "No pricing data found for this component",
+        404
+      );
+    }
+  }
 
   return record;
 };

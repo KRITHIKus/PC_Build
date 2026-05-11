@@ -44,20 +44,45 @@ const populateBuild = (build) =>
     { path: "parts.cooling" },
   ]);
 
-export const createBuild = async (userId, { title, description, source = "manual" }) => {
-  const build = await Build.create({
+// services/build.service.js
+
+export const enrichBuildWithComponents = async (build) => {
+  const ids = collectComponentIds(build.parts.toObject ? build.parts.toObject() : build.parts);
+  const components = ids.length > 0 ? await Component.find({ _id: { $in: ids } }) : [];
+
+  build.totalEstimatedPrice = calculateTotalPrice(components);
+  build.currency = components[0]?.currency ?? "INR";
+  build.compatibilityResult = components.length >= 2 ? checkBuildCompatibility(components) : null;
+
+  await build.save();
+  return populateBuild(build);
+};
+
+export const createBuild = async (userId, { title, description, source = "manual", parts }) => {
+  let build = await Build.create({
     user: userId,
     title: title.trim(),
     description: description?.trim() ?? null,
     source,
-    parts: { storage: [] },
+    parts: parts || { storage: [] },
   });
+
+  // NEW: enrich price & compatibility
+  build = await enrichBuildWithComponents(build);
+
   return build;
 };
 
-export const createScratchBuild = async (userId, { title, description }) => {
-  return createBuild(userId, { title, description, source: "scratch" });
+export const createScratchBuild = async (userId, { title, description, parts }) => {
+  return createBuild(userId, {
+    title,
+    description,
+    source: "scratch",
+    parts,
+  });
 };
+
+
 
 export const getMyBuilds = async (userId, query) => {
   const { page, limit, skip } = paginate(query);
