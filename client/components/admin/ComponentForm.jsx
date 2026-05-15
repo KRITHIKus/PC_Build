@@ -81,8 +81,12 @@ export default function ComponentForm({ initial, onSubmit, onCancel, loading }) 
       if (imageFile) {
         const formData = new FormData()
         formData.append('image', imageFile)
-        const res = await uploadImage(formData).unwrap()
-        imageUrl  = res?.url || res?.imageUrl || res?.data?.url || ''
+const res = await uploadImage({
+  file: imageFile,
+  folder: 'components',
+  componentId: initial?._id
+}).unwrap()     
+   imageUrl  = res?.url || res?.imageUrl || res?.data?.url || ''
         if (!imageUrl) throw new Error('No image URL returned')
       }
 

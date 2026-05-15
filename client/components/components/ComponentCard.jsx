@@ -71,6 +71,7 @@ function ComponentImage({ imageUrl, name, type }) {
   const shouldShowImage = imageUrl && !isPlaceholder && !imgError;
 
   if (!shouldShowImage) {
+    // Fallback illustration keeps black/neutral background
     return (
       <div className="w-28 h-28 flex items-center justify-center">
         <ComponentFallbackVisual type={type} size="lg" />
@@ -78,16 +79,19 @@ function ComponentImage({ imageUrl, name, type }) {
     );
   }
 
+  // Real image: keep white background as-is
   return (
-    <div className="relative w-full h-full">
-      <Image
-        src={imageUrl}
-        alt={name}
-        fill
-        className="object-contain p-4"
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        onError={() => setImgError(true)}
-      />
+    <div className="relative w-full h-full flex items-center justify-center">
+      <div className="relative w-[85%] h-[85%] rounded-lg flex items-center justify-center">
+        <Image
+          src={imageUrl}
+          alt={name}
+          fill
+          className="object-contain p-3"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          onError={() => setImgError(true)}
+        />
+      </div>
     </div>
   );
 }
@@ -134,22 +138,13 @@ export function ComponentCard({ component, index = 0 }) {
           />
 
           {/* Image / Fallback area */}
-          <div
-            className="relative flex items-center justify-center overflow-hidden flex-shrink-0"
-            style={{
-              height:       '140px',
-              background:   'rgba(0,0,0,0.25)',
-              borderBottom: '1px solid rgba(255,255,255,0.04)',
-            }}
-          >
-            <ComponentImage imageUrl={imageUrl} name={name} type={type} />
-
-            {/* Inner glow on hover */}
-            <motion.div
-              className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,59,31,0.07) 0%, transparent 70%)' }}
-            />
-          </div>
+<div
+  className={`relative w-full aspect-square flex items-center justify-center rounded-t-2xl overflow-hidden transition-colors duration-200 ${
+    !imageUrl || imageUrl.includes("placehold.co") ? "bg-[var(--surface-3)]" : "bg-white"
+  }`}
+>
+  <ComponentImage imageUrl={imageUrl} name={name} type={type} />
+</div>
 
           {/* Content */}
           <div className="flex flex-col flex-1 p-4">

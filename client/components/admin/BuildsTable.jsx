@@ -86,9 +86,15 @@ function StatusBadge({ status }) {
 
 export default function BuildsTable() {
 
+  const [page, setPage] = useState(1);
+const limit = 10;
   /* ── API — identical hooks ───────────────────────────────── */
-  const { data: response, isLoading, isError } = useGetBuildsQuery()
-  const builds = response?.data || []
+const { data: response, isLoading, isError } = useGetBuildsQuery({
+  page,
+  limit,
+});
+ const builds = response?.data || [];
+const meta = response?.meta || {};
 
   const [updateBuildMeta,   { isLoading: updating }]   = useUpdateBuildMetaMutation()
   const [deleteBuild,       { isLoading: deleting }]   = useDeleteBuildMutation()
@@ -100,6 +106,7 @@ export default function BuildsTable() {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [activeToggle, setActiveToggle] = useState(null)
   const [message,      setMessage]      = useState({ type: '', text: '' })
+  
 
   const flash = (type, text) => {
     setMessage({ type, text })
@@ -237,8 +244,10 @@ export default function BuildsTable() {
                           onChange={e => setEditForm(p => ({ ...p, journeyStatus: e.target.value }))}
                           style={{ ...inputBase, width: 'auto', paddingRight: '24px' }}
                         >
-                          <option value="draft">draft</option>
-                          <option value="published">published</option>
+                          <option value="planning">palnning</option>
+                          <option value="in-progress">in-progress</option>
+                          <option value="completed">completed</option>
+                          <option value="on-hold">on-hold</option>
                         </select>
                       ) : (
                         <StatusBadge status={b.journeyStatus} />
@@ -331,7 +340,47 @@ export default function BuildsTable() {
           </div>
         </div>
       )}
+{/* ── Pagination Controls ─────────────────────────────── */}
+<div className="flex items-center justify-between mt-4 px-2">
 
+  <p className="text-xs" style={{ color: "var(--text-3)" }}>
+    Page {meta.page || 1} of {meta.totalPages || 1}
+  </p>
+
+  <div className="flex gap-2">
+
+    <button
+      onClick={() => setPage((p) => Math.max(p - 1, 1))}
+      disabled={!meta.hasPrevPage}
+      className="h-8 px-3 rounded-lg text-xs font-medium border"
+      style={{
+        background: "var(--surface-2)",
+        color: "var(--text-1)",
+        border: "1px solid var(--border)",
+        opacity: !meta.hasPrevPage ? 0.5 : 1,
+        cursor: !meta.hasPrevPage ? "not-allowed" : "pointer",
+      }}
+    >
+      Previous
+    </button>
+
+    <button
+      onClick={() => setPage((p) => p + 1)}
+      disabled={!meta.hasNextPage}
+      className="h-8 px-3 rounded-lg text-xs font-medium border"
+      style={{
+        background: "var(--surface-2)",
+        color: "var(--text-1)",
+        border: "1px solid var(--border)",
+        opacity: !meta.hasNextPage ? 0.5 : 1,
+        cursor: !meta.hasNextPage ? "not-allowed" : "pointer",
+      }}
+    >
+      Next
+    </button>
+
+  </div>
+</div>
       {/* Delete modal */}
       {deleteTarget && (
         <DeleteConfirmModal

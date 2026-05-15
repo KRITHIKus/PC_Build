@@ -7,12 +7,12 @@ export const uploadApi = baseApi.injectEndpoints({
 
     // 🔹 UPLOAD IMAGE
     uploadImage: builder.mutation({
-      query: ({ file, folder = "general" }) => {
+      query: ({ file, folder = "general", componentId }) => { // ✅ added componentId
         const formData = new FormData();
         formData.append("image", file);
 
         return {
-          url: `/media/upload?folder=${folder}`,
+          url: `/media/upload?folder=${folder}&componentId=${componentId}`, // ✅ send componentId as query
           method: "POST",
           body: formData,
         };

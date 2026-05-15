@@ -6,15 +6,19 @@ export const buildsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
     // 🔹 GET ALL BUILDS (ADMIN VIEW / USER BUILDS)
-    getBuilds: builder.query({
-      query: (params) => ({
-        url: "/builds",
-        method: "GET",
-        params, // pagination, filters
-      }),
-      providesTags: ["Builds"],
-    }),
+   getBuilds: builder.query({
+  query: ({ page = 1, limit = 10, ...filters } = {}) => ({
+    url: "/builds",
+    method: "GET",
+    params: {
+      page,
+      limit,
+      ...filters,
+    },
+  }),
 
+  providesTags: ["Builds"],
+}),
     // 🔹 GET SINGLE BUILD
     getBuildById: builder.query({
       query: (id) => `/builds/${id}`,
@@ -59,7 +63,7 @@ export const buildsApi = baseApi.injectEndpoints({
     // 🔹 TOGGLE FEATURED (uses updateMeta internally)
     toggleFeatured: builder.mutation({
       query: ({ id, isFeatured }) => ({
-        url: `/builds/${id}`,
+        url: `/builds/isfeature/${id}`,
         method: "PATCH",
         body: { isFeatured },
       }),

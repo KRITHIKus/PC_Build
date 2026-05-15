@@ -12,7 +12,9 @@ import {
   journeyStatus,
   duplicate,
   remove,
-  getFeatured,getFeaturedOne
+  getFeatured,getFeaturedOne,
+  featured,
+  getUserFeaturedBuilds
   
 } from "./build.controller.js";
 import {
@@ -26,6 +28,8 @@ import {
 
 const router = Router();
 
+
+router.get("/featured/user", protect, getUserFeaturedBuilds);
 router.get("/featured", getFeatured);
 router.get("/featured/:id", getFeaturedOne);
 
@@ -42,5 +46,7 @@ router.patch("/:id/favorite", favorite);
 router.patch("/:id/journey-status", journeyStatus);
 router.post("/:id/duplicate", duplicate);
 router.delete("/:id", remove);
+router.patch('/isfeature/:id',featured)
+
 
 export default router;

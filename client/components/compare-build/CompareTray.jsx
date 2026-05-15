@@ -18,9 +18,10 @@ export function CompareTray({ selected = [], onClear }) {
   const ids = selected.map((item) => typeof item === 'string' ? item : item._id).join(',')
   const hasBaseBuild = searchParams.get('base')
   
-const compareHref = hasBaseBuild
-  ? `/compare?ids=${ids}&base=${hasBaseBuild}`
-  : `/compare?ids=${ids}`
+const compareHref =
+  selected.length >= 2
+    ? `/compare?ids=${ids}&base=${selected[0]}`
+    : `/compare?ids=${ids}`
 
   return (
     <AnimatePresence>
@@ -131,7 +132,34 @@ onClick={() => {
   <GitCompare size={15} strokeWidth={2.2} />
   Compare Builds
 </motion.button>
+<motion.button
+  type="button"
+  disabled={count === 0}
+  onClick={() => {
+    if (!count) return
 
+    const recommendedHref = `/recommended?base=${ids}`
+    window.location.href = recommendedHref
+  }}
+  whileHover={
+    count
+      ? { scale: 1.03, boxShadow: '0 0 20px rgba(255,255,255,0.2)' }
+      : {}
+  }
+  whileTap={count ? { scale: 0.97 } : {}}
+  className="flex items-center justify-center gap-2 px-5 h-10 w-full sm:w-auto rounded-xl text-sm font-semibold transition-all duration-150"
+  style={{
+    background: count
+      ? 'rgba(255,255,255,0.08)'
+      : 'rgba(255,255,255,0.03)',
+    color: count ? 'var(--text-1)' : 'var(--text-3)',
+    fontFamily: 'var(--font-display)',
+    cursor: count ? 'pointer' : 'not-allowed',
+    border: '1px solid rgba(255,255,255,0.12)',
+  }}
+>
+  Compare Other Builds
+</motion.button>
 <AnimatePresence>
   {showLimitMsg && (
     <motion.div

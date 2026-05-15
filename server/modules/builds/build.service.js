@@ -151,6 +151,7 @@ export const updateBuildParts = async (userId, buildId, parts) => {
   return populateBuild(build);
 };
 
+
 export const renameBuild = async (userId, buildId, title) => {
   const build = await Build.findById(buildId);
   assertOwner(build, userId);
@@ -166,6 +167,14 @@ export const toggleFavorite = async (userId, buildId, { isFavorite, isDreamBuild
   if (isDreamBuild !== undefined) build.isDreamBuild = isDreamBuild;
   await build.save();
   return build;
+};
+
+export const isFeaturedService = async (id, isFeatured) => {
+  return await Build.findByIdAndUpdate(
+    id,
+    { isFeatured },
+    { new: true }
+  );
 };
 
 export const updateJourneyStatus = async (userId, buildId, journeyStatus) => {
@@ -256,4 +265,41 @@ export const getFeaturedBuildById = async (id) => {
   }
 
   return build;
+};
+
+// Fetch featured builds only for the current user
+export const getUserFeaturedBuildsService = async (userId, query = {}) => {
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 12;
+  const skip = (page - 1) * limit;
+
+  const filter = { user: userId, isFeatured: true };
+
+  const [builds, total] = await Promise.all([
+    Build.find(filter)
+      .populate("parts.cpu")
+      .populate("parts.gpu")
+      .populate("parts.ram")
+      .populate("parts.motherboard")
+      .populate("parts.storage")
+      .populate("parts.psu")
+      .populate("parts.cabinet")
+      .populate("parts.cooling")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Build.countDocuments(filter),
+  ]);
+
+  return {
+    builds,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage: page * limit < total,
+      hasPrevPage: page > 1,
+    },
+  };
 };

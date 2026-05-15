@@ -70,38 +70,55 @@ function DetailRegionSelector({ region, onChange }) {
 
 /* ── Detail image with onError fallback ──────────────────────── */
 function DetailImage({ imageUrl, name, type }) {
-  const [imgError, setImgError] = useState(false);
+  const [imgError, setImgError] = useState(false)
+  const isPlaceholder = imageUrl?.includes("placehold.co")
+  const shouldShowImage = imageUrl && !isPlaceholder && !imgError
 
-  const isPlaceholder = imageUrl?.includes("placehold.co");
-  const shouldShowImage = imageUrl && !isPlaceholder && !imgError;
-
-  if (!shouldShowImage) {
-    return (
-      <div className="w-52 h-52 flex items-center justify-center">
-        <ComponentFallbackVisual type={type} size="lg" />
-      </div>
-    );
+  // Parent container styles
+  const containerStyle = {
+    minHeight: "280px",
+    maxHeight: "400px",
   }
 
-  return (
-    <div className="relative w-full h-full" style={{ minHeight: "280px" }}>
-      <Image
-        src={imageUrl}
-        alt={name}
-        fill
-        className="object-contain p-8"
-        sizes="(max-width: 1024px) 100vw, 50vw"
-        priority
-        onError={() => setImgError(true)}
-      />
-    </div>
-  );
-}
+  // Fallback illustration
+  if (!shouldShowImage) {
+    return (
+      <div
+        className="w-full h-full relative rounded-2xl overflow-hidden flex items-center justify-center"
+        style={{ ...containerStyle, background: "var(--surface-2)" }}
+      >
+        <ComponentFallbackVisual
+          type={type}
+          className="w-48 h-48 sm:w-56 sm:h-56" // medium-large, visually balanced
+        />
+      </div>
+    )
+  }
 
+  // Real image
+  return (
+    <div
+      className="w-full h-full relative rounded-2xl overflow-hidden flex items-center justify-center"
+      style={{ ...containerStyle, background: "#fff" }} // white background for product image
+    >
+      <div className="w-3/4 h-3/4 sm:w-2/3 sm:h-2/3 flex items-center justify-center">
+        <Image
+          src={imageUrl}
+          alt={name}
+          fill
+          className="object-contain"
+          sizes="(max-width: 1024px) 100vw, 50vw"
+          priority
+          onError={() => setImgError(true)}
+        />
+      </div>
+    </div>
+  )
+}
 /* ── Loading skeleton ────────────────────────────────────────── */
 function DetailSkeleton() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-10 px-4 sm:px-0">
       <div
         className="rounded-2xl animate-pulse"
         style={{ height: '360px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)' }}
@@ -215,29 +232,24 @@ export default function ComponentDetailPage({ params }) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-10">
 
             {/* ── Left: image / fallback ─────────────────── */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-              className="relative flex items-center justify-center rounded-2xl overflow-hidden"
-              style={{
-                minHeight:  '300px',
-                background: 'var(--surface-2)',
-                border:     '1px solid var(--border)',
-              }}
-            >
-              <DetailImage
-                imageUrl={component.imageUrl}
-                name={component.name}
-                type={component.type}
-              />
-
-              {/* Top glow line */}
-              <div
-                className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-                style={{ background: 'linear-gradient(90deg, transparent, rgba(255,59,31,0.4), transparent)' }}
-              />
-            </motion.div>
+<motion.div
+  initial={{ opacity: 0, x: -20 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+  className="relative flex items-center justify-center rounded-2xl overflow-hidden w-full sm:w-auto"
+  style={{
+    minHeight: '250px',   // mobile friendly
+    maxHeight: '400px',   // desktop cap
+    background: 'var(--surface-2)',
+    border: '1px solid var(--border)',
+  }}
+>
+  <DetailImage
+    imageUrl={component.imageUrl}
+    name={component.name}
+    type={component.type}
+  />
+</motion.div>
 
             {/* ── Right: info ────────────────────────────── */}
             <motion.div
@@ -254,12 +266,9 @@ export default function ComponentDetailPage({ params }) {
 
               {/* Name */}
               <div>
-                <h1
-                  className="text-2xl sm:text-3xl font-bold leading-tight mb-1"
-                  style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}
-                >
-                  {component.name}
-                </h1>
+               <h1 className="text-2xl sm:text-3xl font-bold leading-tight mb-1" style={{ fontFamily: 'var(--font-display)' }}>
+  {component.name}
+</h1>
                 {component.brand && (
                   <p
                     className="text-sm"

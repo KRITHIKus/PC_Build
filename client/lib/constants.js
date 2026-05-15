@@ -8,7 +8,7 @@ export const NAV_LINKS = [
   { label: 'Components',  href: '/components'  },
   { label: 'Build Lab',   href: '/build-lab'   },
   { label: 'Recommended', href: '/recommended' },
-  { label: 'Compare',     href: '/compare'     },
+  { label: 'Compare',     href: '/comparebuilds'     },
   { label: 'Learn',       href: '/learn'       },
   { label: 'History',     href: '/history'     },
   { label: 'Home',     href: '/',   },
@@ -24,8 +24,8 @@ export const AUTH_LINKS = [
 export const USER_NAV_LINKS = [
   { label: 'Dashboard', href: '/dashboard',        icon: 'LayoutDashboard' },
   { label: 'My Builds', href: '/dashboard/builds', icon: 'Cpu'             },
-  { label: 'Compare',   href: '/compare',          icon: 'ArrowLeftRight'  },
-  { label: 'Favourites',href: '/dashboard/saved',  icon: 'Bookmark'        },
+  { label: 'Compare',   href: '/comparebuilds',          icon: 'ArrowLeftRight'  },
+ 
 ]
 
 // ── Admin sidebar nav ───────────────────────────────────────────

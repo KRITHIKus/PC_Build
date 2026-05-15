@@ -14,6 +14,8 @@ import {
   deleteBuild,
   getFeaturedBuilds,
 getFeaturedBuildById,
+isFeaturedService,
+getUserFeaturedBuildsService
 } from "./build.service.js";
 
 export const create = asyncHandler(async (req, res) => {
@@ -80,4 +82,27 @@ export const getFeatured = asyncHandler(async (req, res) => {
 export const getFeaturedOne = asyncHandler(async (req, res) => {
   const build = await getFeaturedBuildById(req.params.id);
   sendSuccess(res, 200, "Featured build fetched", build);
+});
+
+// controller
+export const featured = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { isFeatured } = req.body;
+
+  // type validation
+  if (typeof isFeatured !== "boolean") {
+    return res.status(400).json({
+      success: false,
+      message: "isFeatured must be boolean",
+    });
+  }
+
+  const build = await isFeaturedService(id, isFeatured);
+
+  sendSuccess(res, 200, "Featured status updated", build);
+});
+
+export const getUserFeaturedBuilds = asyncHandler(async (req, res) => {
+  const { builds, meta } = await getUserFeaturedBuildsService(req.user.id, req.query);
+  sendSuccess(res, 200, "User featured builds fetched", builds, meta);
 });

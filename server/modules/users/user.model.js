@@ -30,12 +30,21 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+
+    // ✅ ADD THIS
+    avatar: {
+      type: String,
+      default: "",
+    },
+    avatarPublicId: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
   }
 );
-
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);

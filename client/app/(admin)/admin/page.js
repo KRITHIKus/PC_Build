@@ -1,24 +1,52 @@
 'use client'
 
 import Link from 'next/link'
-import { Package, Layers, ArrowRight } from 'lucide-react'
+import { Package, Layers, ArrowRight , DollarSign, BookOpen,History,Home} from 'lucide-react'
 
 const CARDS = [
   {
-    href:  '/admin/components',
-    icon:  Package,
-    label: 'Components',
-    desc:  'Manage inventory, pricing, and stock levels.',
-    stat:  'Inventory',
+    href: "/admin/components",
+    icon: Package,
+    label: "Components",
+    desc: "Manage inventory, pricing, and stock levels.",
+    stat: "Inventory",
   },
   {
-    href:  '/admin/builds',
-    icon:  Layers,
-    label: 'Builds',
-    desc:  'Manage user builds and featured presets.',
-    stat:  'Builds',
+    href: "/admin/builds",
+    icon: Layers,
+    label: "Builds",
+    desc: "Manage user builds and featured presets.",
+    stat: "Builds",
   },
-]
+  {
+    href: "/admin/pricing",
+    icon: DollarSign,
+    label: "Pricing",
+    desc: "Control global pricing rules and margins.",
+    stat: "Pricing",
+  },
+  {
+    href: "/admin/learn",
+    icon: BookOpen,
+    label: "Learn",
+    desc: "Manage guides, tutorials, and content.",
+    stat: "Content",
+  },
+  {
+    href: "/admin/history",
+    icon: History,
+    label: "History",
+    desc: "Track admin actions and system logs.",
+    stat: "Logs",
+  },
+  {
+    href: "/",
+    icon: Home,
+    label: "Home",
+    desc: "Back to main website.",
+    stat: "Exit",
+  },
+];
 
 export default function AdminPage() {
   return (

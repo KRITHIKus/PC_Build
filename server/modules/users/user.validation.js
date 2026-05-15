@@ -1,3 +1,5 @@
+import {AppError} from "../../utils/appError.js"
+
 export const validateUpdateProfile = (req, res, next) => {
   const { username } = req.body;
 
@@ -15,6 +17,20 @@ export const validateUpdateProfile = (req, res, next) => {
     if (username.trim().length > 30) {
       return res.status(400).json({ success: false, message: "Username must not exceed 30 characters" });
     }
+  }
+
+  next();
+};
+
+export const validateUpdatePassword = (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return next(new AppError("Both passwords are required", 400));
+  }
+
+  if (newPassword.length < 8) {
+    return next(new AppError("Password must be at least 8 characters", 400));
   }
 
   next();

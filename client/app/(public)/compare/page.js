@@ -8,7 +8,7 @@ import { useComparePublicBuildsMutation, useCompareHybridBuildsMutation
  } from '@/services/compareApi'
 import { SystemLoader }           from '@/components/shared/SystemLoader'
 import { CompareHeader }          from '@/components/compare/CompareHeader'
-import { CompareBuildCard }       from '@/components/compare/CompareBuildCard'
+import { CompareBuildCard }       from '@/components/compare-build/CompareBuildCard'
 import { ComparePriceSummary }    from '@/components/compare/ComparePriceSummary'
 import { CompareCompatibility }   from '@/components/compare/CompareCompatibility'
 import { CompareComponentTable }  from '@/components/compare/CompareComponentTable'

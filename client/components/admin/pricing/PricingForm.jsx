@@ -12,7 +12,7 @@ const fieldStyle = {
   transition: 'border-color 0.15s',
 }
 
-const REGIONS = ['Karnataka', 'Tamil Nadu', 'Delhi', 'Maharashtra']
+const REGIONS = ['Karnataka','Kerala', 'Tamil Nadu', 'Delhi', 'Maharashtra', ]
 
 function Field({ label, required, children }) {
   return (

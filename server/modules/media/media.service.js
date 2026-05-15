@@ -1,7 +1,7 @@
 import { Readable } from "stream";
 import cloudinary from "../../config/cloudinary.js";
 import { AppError } from "../../utils/appError.js";
-
+import Component from "../components/component.model.js";
 const VALID_FOLDERS = ["components", "learn", "history", "builds", "general"];
 
 const bufferToStream = (buffer) => {
@@ -11,6 +11,7 @@ const bufferToStream = (buffer) => {
   return readable;
 };
 
+// ✅ Existing Cloudinary upload function
 export const uploadImage = (buffer, { folder = "general", filename } = {}) => {
   const safeFolder = VALID_FOLDERS.includes(folder) ? folder : "general";
 
@@ -41,6 +42,29 @@ export const uploadImage = (buffer, { folder = "general", filename } = {}) => {
   });
 };
 
+// ✅ New function: upload to Cloudinary AND update component in DB
+export const uploadImageToComponent = async (componentId, buffer, { folder = "general", filename } = {}) => {
+  // 1️⃣ Upload to Cloudinary
+  const result = await uploadImage(buffer, { folder, filename });
+
+  // 2️⃣ Update component in DB
+  const updatedComponent = await Component.findByIdAndUpdate(
+    componentId,
+    { imageUrl: result.url },
+    { new: true }
+  );
+
+  if (!updatedComponent) {
+    throw new AppError("Component not found", 404);
+  }
+
+  return {
+    component: updatedComponent,
+    cloudinary: result,
+  };
+};
+
+// ✅ Delete image function (unchanged)
 export const deleteImage = async (publicId) => {
   try {
     const result = await cloudinary.uploader.destroy(publicId, { resource_type: "image" });
