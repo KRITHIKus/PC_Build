@@ -8,6 +8,7 @@ import { Eye, EyeOff, Mail, Lock, User, AlertCircle, ArrowRight, CheckCircle2 } 
 import { useDispatch } from 'react-redux'
 import { useRegisterMutation } from '@/services/authApi'
 import { setCredentials } from '@/store/authSlice'
+import { GoogleLoginButton } from './GoogleLoginButton'
 
 /* ── AuthInput (same pattern, local to this form) ───────────── */
 function AuthInput({ id, label, type = 'text', placeholder, value, onChange, icon: Icon, rightSlot, error, autoComplete, hint }) {
@@ -313,6 +314,8 @@ export function SignUpForm() {
       />
 
       <SubmitButton loading={isLoading} />
+
+      <GoogleLoginButton label="Sign up with Google" />
 
       {/* Switch link */}
       <p className="text-center text-sm" style={{ color: 'var(--text-3)' }}>

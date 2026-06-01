@@ -5,13 +5,14 @@ export const API_BASE    = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:
 
 // ── Public nav ──────────────────────────────────────────────────
 export const NAV_LINKS = [
+  { label: 'Home',     href: '/',   },
   { label: 'Components',  href: '/components'  },
   { label: 'Build Lab',   href: '/build-lab'   },
   { label: 'Recommended', href: '/recommended' },
   { label: 'Compare',     href: '/comparebuilds'     },
   { label: 'Learn',       href: '/learn'       },
   { label: 'History',     href: '/history'     },
-  { label: 'Home',     href: '/',   },
+  
 ]
 
 // ── Auth ────────────────────────────────────────────────────────

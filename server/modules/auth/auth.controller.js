@@ -5,6 +5,7 @@ import {
   loginUser,
   getCurrentUser,
   cookieOptions,
+  googleLoginOrRegister
 } from "./auth.service.js";
 
 export const register = asyncHandler(async (req, res) => {
@@ -30,4 +31,19 @@ export const logout = asyncHandler(async (req, res) => {
 export const getMe = asyncHandler(async (req, res) => {
   const user = await getCurrentUser(req.user.id);
   sendSuccess(res, 200, "Current user fetched", user);
+});
+
+export const googleAuth = asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+
+  if (!idToken) {
+    throw new Error("ID token is required");
+  }
+
+  const { user, token } = await googleLoginOrRegister({ idToken });
+
+  res
+    .cookie("token", token, cookieOptions())
+    .status(200)
+    .json({ message: "Logged in with Google successfully", user });
 });

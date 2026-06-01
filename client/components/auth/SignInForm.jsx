@@ -1,5 +1,5 @@
 'use client'
-
+import { GoogleLoginButton } from './GoogleLoginButton'
 import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -233,6 +233,10 @@ export function SignInForm() {
       />
 
       <SubmitButton loading={isLoading} label="Sign In" />
+
+      <div className="pt-2">
+        <GoogleLoginButton />
+      </div>
 
       {/* Switch link */}
       <p className="text-center text-sm" style={{ color: 'var(--text-3)' }}>

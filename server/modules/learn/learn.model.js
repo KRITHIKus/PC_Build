@@ -4,7 +4,8 @@ const DIFFICULTIES = ["beginner", "intermediate", "advanced"];
 
 const CATEGORIES = [
   "cpu", "gpu", "ram", "motherboard", "storage", "psu",
-  "cooling", "cabinet", "pc-building-basics", "buying-guidance", "troubleshooting",
+  "cooling", "cabinet", "pc-building-basics", "Buying-guidance", "Troubleshooting", "Guide", "Tutorial", "Refrence",
+  "Build Tips", "News","Reviews"
 ];
 
 const learnSchema = new mongoose.Schema(

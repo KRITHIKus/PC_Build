@@ -3,6 +3,7 @@ import { AppError } from "../../utils/appError.js";
 import bcrypt from "bcryptjs";
  import cloudinary from "../../config/cloudinary.js";
 
+
 const ALLOWED_UPDATE_FIELDS = ["username"];
 
 const formatUser = (user) => {

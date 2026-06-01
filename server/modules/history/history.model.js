@@ -49,10 +49,22 @@ const historySchema = new mongoose.Schema(
       type: String,
       required: [true, "Content body is required"],
     },
-    coverImageUrl: {
-      type: String,
-      default: null,
+    coverImages: {
+  type: [
+    {
+      type: {
+        type: String,
+        enum: ["inventor", "invention"],
+        required: true,
+      },
+      url: {
+        type: String,
+        required: true,
+      },
     },
+  ],
+  default: [],
+},
     isPublished: {
       type: Boolean,
       default: false,

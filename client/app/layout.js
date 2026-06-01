@@ -1,16 +1,17 @@
-import { Inter, Sora } from 'next/font/google'
+import { Bricolage_Grotesque, Figtree } from 'next/font/google'
 import './globals.css'
 import { StoreProvider } from '@/providers/StoreProvider'
 
-const inter = Inter({
+const figtree = Figtree({
   subsets:  ['latin'],
-  variable: '--font-inter',
+  variable: '--font-body',
   display:  'swap',
+  weight:   ['400', '500', '600'],
 })
 
-const sora = Sora({
+const bricolage = Bricolage_Grotesque({
   subsets:  ['latin'],
-  variable: '--font-sora',
+  variable: '--font-display',
   display:  'swap',
   weight:   ['400', '500', '600', '700', '800'],
 })
@@ -23,7 +24,6 @@ export const metadata = {
   description:
     'Premium PC building platform. Browse components, compare builds, and configure your perfect setup.',
   keywords: ['PC builder', 'custom PC', 'gaming PC', 'build PC', 'PC components'],
- 
 }
 
 export const viewport = {
@@ -32,9 +32,10 @@ export const viewport = {
     { media: '(prefers-color-scheme: dark)', color: '#050505' },
   ],
 }
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${sora.variable}`}>
+    <html lang="en" className={`${figtree.variable} ${bricolage.variable}`}>
       <body>
         <StoreProvider>
           {children}

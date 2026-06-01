@@ -4,7 +4,7 @@ export const baseApi = createApi({
   reducerPath: 'api',
 
   baseQuery: fetchBaseQuery({
-    baseUrl:  'http://localhost:5000/api/v1',
+    baseUrl:   process.env.NEXT_PUBLIC_API_URL,
     credentials:"include",
     prepareHeaders(headers) {
       return headers

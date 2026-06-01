@@ -31,7 +31,18 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
-    // ✅ ADD THIS
+    // Google OAuth fields
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    provider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+
     avatar: {
       type: String,
       default: "",
@@ -45,6 +56,8 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Hash password for both local and Google users
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);

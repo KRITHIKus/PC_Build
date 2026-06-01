@@ -1,203 +1,538 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useRef, useState, useEffect } from 'react'
+import { motion, useInView, useReducedMotion } from 'framer-motion'
 
-/* ─────────────────────────────────────────────────────────────
-   System Interface Illustration
-   Floating hardware cards + connection lines + glowing nodes
-───────────────────────────────────────────────────────────── */
-
-function float(yAmt = 8, duration = 4, delay = 0) {
-  return {
-    animate: { y: [-yAmt / 2, yAmt / 2, -yAmt / 2] },
-    transition: { duration, delay, repeat: Infinity, ease: 'easeInOut' },
-  }
+/* ── Count-up hook ─────────────────────────────────────────────── */
+function useCountUp(end, duration = 1100, trigger = false) {
+  const [val, setVal] = useState(0)
+  useEffect(() => {
+    if (!trigger || !end) return
+    let t0 = null
+    const tick = (ts) => {
+      if (!t0) t0 = ts
+      const p = Math.min((ts - t0) / duration, 1)
+      const eased = 1 - Math.pow(1 - p, 3)
+      setVal(Math.floor(eased * end))
+      if (p < 1) requestAnimationFrame(tick)
+      else setVal(end)
+    }
+    requestAnimationFrame(tick)
+  }, [trigger, end, duration])
+  return val
 }
 
-/* ── Hardware card component ─────────────────────────────────── */
-function HardwareCard({ label, sublabel, icon, style, floatDelay = 0, floatAmt = 7 }) {
-  const f = float(floatAmt, 4.5, floatDelay)
+/* ── SVG hardware icons ────────────────────────────────────────── */
+function IconCpu() {
   return (
-    <motion.div
-      animate={f.animate}
-      transition={f.transition}
-      className="absolute flex flex-col gap-1.5 p-3 rounded-xl"
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"
+      stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="10" height="10" rx="1" strokeWidth="1.2" />
+      <rect x="5.5" y="5.5" width="5" height="5" rx="0.4" strokeWidth="0.85" opacity="0.5" />
+      <line x1="6"  y1="1"  x2="6"  y2="3"  strokeWidth="1.2" />
+      <line x1="10" y1="1"  x2="10" y2="3"  strokeWidth="1.2" />
+      <line x1="6"  y1="13" x2="6"  y2="15" strokeWidth="1.2" />
+      <line x1="10" y1="13" x2="10" y2="15" strokeWidth="1.2" />
+      <line x1="1"  y1="6"  x2="3"  y2="6"  strokeWidth="1.2" />
+      <line x1="1"  y1="10" x2="3"  y2="10" strokeWidth="1.2" />
+      <line x1="13" y1="6"  x2="15" y2="6"  strokeWidth="1.2" />
+      <line x1="13" y1="10" x2="15" y2="10" strokeWidth="1.2" />
+    </svg>
+  )
+}
+
+function IconGpu() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"
+      stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="5" width="14" height="7" rx="1" strokeWidth="1.2" />
+      <rect x="3"   y="7" width="3"   height="3" rx="0.5" strokeWidth="0.85" opacity="0.5" />
+      <rect x="8"   y="7" width="3"   height="3" rx="0.5" strokeWidth="0.85" opacity="0.5" />
+      <line x1="4"   y1="3" x2="4"   y2="5" strokeWidth="1.2" />
+      <line x1="7.5" y1="3" x2="7.5" y2="5" strokeWidth="1.2" />
+      <line x1="11"  y1="3" x2="11"  y2="5" strokeWidth="1.2" />
+    </svg>
+  )
+}
+
+function IconRam() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"
+      stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="5" width="14" height="7" rx="0.5" strokeWidth="1.2" />
+      <rect x="3"  y="7" width="1.6" height="3" rx="0.3" strokeWidth="0.85" opacity="0.5" />
+      <rect x="6"  y="7" width="1.6" height="3" rx="0.3" strokeWidth="0.85" opacity="0.5" />
+      <rect x="9"  y="7" width="1.6" height="3" rx="0.3" strokeWidth="0.85" opacity="0.5" />
+      <rect x="12" y="7" width="1.6" height="3" rx="0.3" strokeWidth="0.85" opacity="0.5" />
+      <line x1="4"  y1="3" x2="4"  y2="5" strokeWidth="1" />
+      <line x1="7"  y1="3" x2="7"  y2="5" strokeWidth="1" />
+      <line x1="10" y1="3" x2="10" y2="5" strokeWidth="1" />
+    </svg>
+  )
+}
+
+function IconSsd() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"
+      stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="3" width="14" height="10" rx="1" strokeWidth="1.2" />
+      <rect x="3" y="6" width="6.5" height="4"  rx="0.5" strokeWidth="0.85" opacity="0.5" />
+      <circle cx="12.5" cy="8" r="1.2" strokeWidth="0.85" opacity="0.5" />
+    </svg>
+  )
+}
+
+/* ── Trace separator ────────────────────────────────────────────── */
+function TraceSeparator() {
+  const wrapRef = useRef()
+  const [w, setW] = useState(300)
+  const shouldReduce = useReducedMotion()
+
+  useEffect(() => {
+    const measure = () => { if (wrapRef.current) setW(wrapRef.current.offsetWidth) }
+    measure()
+    const ro = new ResizeObserver(measure)
+    if (wrapRef.current) ro.observe(wrapRef.current)
+    return () => ro.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={wrapRef}
       style={{
-        background:     'rgba(20,20,22,0.92)',
-        border:         '1px solid rgba(255,59,31,0.22)',
-        boxShadow:      '0 0 20px rgba(255,59,31,0.08), 0 8px 24px rgba(0,0,0,0.5)',
-        backdropFilter: 'blur(12px)',
-        minWidth:       '110px',
-        ...style,
+        position: 'relative',
+        height: '28px',
+        display: 'flex',
+        alignItems: 'center',
+        margin: '4px 0',
+        overflow: 'hidden',
       }}
     >
-      {/* Top accent */}
-      <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: '1px', background: 'linear-gradient(90deg,transparent,rgba(255,59,31,0.55),transparent)' }} />
+      {/* Track line */}
+      <div style={{
+        width: '100%',
+        height: '1px',
+        background: 'linear-gradient(90deg, transparent, rgba(255,59,31,0.25) 15%, rgba(255,59,31,0.25) 85%, transparent)',
+      }} />
 
-      <div className="flex items-center gap-2">
-        <span style={{ fontSize: '16px' }}>{icon}</span>
-        <div>
-          <p style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-1)', fontFamily: 'var(--font-display)', letterSpacing: '0.04em' }}>
-            {label}
-          </p>
-          <p style={{ fontSize: '0.55rem', color: 'var(--text-3)', fontFamily: 'monospace' }}>
-            {sublabel}
-          </p>
-        </div>
-      </div>
+      {/* Left node */}
+      <div style={{
+        position: 'absolute', left: 0, top: '50%',
+        transform: 'translateY(-50%)',
+        width: '5px', height: '5px', borderRadius: '50%',
+        background: 'rgba(255,59,31,0.5)',
+        boxShadow: '0 0 6px rgba(255,59,31,0.6)',
+      }} />
 
-      {/* Status bar */}
-      <div style={{ height: '2px', background: 'rgba(255,255,255,0.04)', borderRadius: '2px', overflow: 'hidden' }}>
+      {/* Right node */}
+      <div style={{
+        position: 'absolute', right: 0, top: '50%',
+        transform: 'translateY(-50%)',
+        width: '5px', height: '5px', borderRadius: '50%',
+        background: 'rgba(255,59,31,0.5)',
+        boxShadow: '0 0 6px rgba(255,59,31,0.6)',
+      }} />
+
+      {/* Traveling pulse */}
+      {!shouldReduce && (
         <motion.div
-          style={{ height: '100%', background: 'var(--red)', borderRadius: '2px' }}
-          animate={{ width: ['30%', '85%', '55%', '92%', '30%'] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: floatDelay }}
+          style={{
+            position: 'absolute',
+            top: '50%', marginTop: '-4px', left: 0,
+            width: '8px', height: '8px', borderRadius: '50%',
+            background: '#ff3b1f',
+            boxShadow: '0 0 10px rgba(255,59,31,1), 0 0 20px rgba(255,59,31,0.4)',
+          }}
+          animate={{ x: [0, w - 8] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: 'linear', repeatDelay: 1.2 }}
         />
-      </div>
+      )}
+
+      {/* Trailing glow */}
+      {!shouldReduce && (
+        <motion.div
+          style={{
+            position: 'absolute',
+            top: '50%', marginTop: '-1px', left: 0,
+            height: '2px', borderRadius: '1px',
+            background: 'linear-gradient(90deg, transparent, rgba(255,59,31,0.5))',
+            pointerEvents: 'none',
+          }}
+          animate={{ width: [0, w * 0.35], opacity: [0, 0.6, 0] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: 'linear', repeatDelay: 1.2 }}
+        />
+      )}
+    </div>
+  )
+}
+
+/* ── Metric card ────────────────────────────────────────────────── */
+function MetricCard({ label, value, suffix = '', delay = 0 }) {
+  const ref    = useRef()
+  const inView = useInView(ref, { once: true, margin: '-20px' })
+  const isNum  = typeof value === 'number'
+  const count  = useCountUp(isNum ? value : 0, 1100, inView)
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 10 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ delay, duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+      style={{
+        position: 'relative',
+        background: 'var(--surface-2)',
+        border: '1px solid var(--border)',
+        borderRadius: '8px',
+        padding: '12px 14px',
+        overflow: 'hidden',
+        minWidth: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '6px',
+      }}
+    >
+      {/* Top gradient accent */}
+      <div style={{
+        position: 'absolute', top: 0, left: '10%', right: '10%',
+        height: '1px',
+        background: 'linear-gradient(90deg, transparent, rgba(255,59,31,0.45), transparent)',
+      }} />
+
+      {/* Bottom ambient glow */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        height: '40px',
+        background: 'radial-gradient(ellipse at 50% 100%, rgba(255,59,31,0.05) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      <p style={{
+        fontSize: '9px',
+        color: 'var(--text-3)',
+        fontFamily: 'monospace',
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        margin: 0,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+      }}>
+        {label}
+      </p>
+
+      <p style={{
+        fontSize: '1.45rem',
+        fontWeight: 700,
+        color: 'var(--text-1)',
+        fontFamily: 'var(--font-display)',
+        lineHeight: 1,
+        letterSpacing: '-0.03em',
+        margin: 0,
+      }}>
+        {isNum ? `${count}${suffix}` : value}
+      </p>
+
+      {/* Active dot */}
+      <motion.div
+        animate={{ opacity: [1, 0.3, 1] }}
+        transition={{ duration: 2.4, repeat: Infinity, delay }}
+        style={{
+          position: 'absolute', top: '10px', right: '10px',
+          width: '5px', height: '5px', borderRadius: '50%',
+          background: 'var(--red)',
+          boxShadow: '0 0 6px rgba(255,59,31,0.7)',
+        }}
+      />
     </motion.div>
   )
 }
 
-/* ── Glowing node ────────────────────────────────────────────── */
-function GlowNode({ cx, cy, delay = 0, size = 5 }) {
+/* ── Spec row ───────────────────────────────────────────────────── */
+function SpecRow({ Icon, label, sublabel, percent, delay, isLast, inView }) {
   return (
-    <g>
-      <motion.circle
-        cx={cx} cy={cy} r={size * 1.8}
-        fill="rgba(255,59,31,0.1)"
-        animate={{ r: [size * 1.4, size * 2.6, size * 1.4], opacity: [0.4, 0, 0.4] }}
-        transition={{ duration: 3, delay, repeat: Infinity }}
-      />
-      <circle cx={cx} cy={cy} r={size} fill="var(--red)" opacity="0.85" />
-    </g>
-  )
-}
+    <div style={{
+      paddingBottom: isLast ? 0 : '12px',
+      marginBottom: isLast ? 0 : '12px',
+      borderBottom: isLast ? 'none' : '1px solid rgba(255,255,255,0.05)',
+    }}>
+      {/* Row header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        marginBottom: '7px',
+      }}>
+        {/* Icon container */}
+        <span style={{
+          color: 'var(--red)',
+          opacity: 0.8,
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '24px', height: '24px',
+          background: 'rgba(255,59,31,0.08)',
+          borderRadius: '4px',
+          border: '1px solid rgba(255,59,31,0.15)',
+        }}>
+          <Icon />
+        </span>
 
-/* ── Animated trace line ─────────────────────────────────────── */
-function TraceLine({ d, delay = 0, duration = 2 }) {
-  return (
-    <motion.path
-      d={d}
-      stroke="rgba(255,59,31,0.45)"
-      strokeWidth="1"
-      fill="none"
-      strokeLinecap="round"
-      strokeDasharray="6 10"
-      animate={{ strokeDashoffset: [0, -48] }}
-      transition={{ duration, delay, repeat: Infinity, ease: 'linear' }}
-    />
-  )
-}
+        {/* Label */}
+        <span style={{
+          fontSize: '11.5px',
+          fontFamily: 'var(--font-display)',
+          fontWeight: 600,
+          color: 'var(--text-1)',
+          flex: 1,
+          minWidth: 0,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          letterSpacing: '-0.01em',
+        }}>
+          {label}
+        </span>
 
-/* ── Main illustration ───────────────────────────────────────── */
-export function AuthIllustration() {
-  return (
-    <div className="relative w-full flex items-center justify-center select-none" style={{ minHeight: '340px' }}>
+        {/* Sub-label + percentage */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          <span style={{
+            fontSize: '9px',
+            fontFamily: 'monospace',
+            color: 'var(--text-3)',
+            letterSpacing: '0.06em',
+          }}>
+            {sublabel}
+          </span>
+          <span style={{
+            fontSize: '10px',
+            fontFamily: 'monospace',
+            color: 'rgba(255,59,31,0.8)',
+            fontWeight: 700,
+            minWidth: '28px',
+            textAlign: 'right',
+          }}>
+            {percent}%
+          </span>
+        </div>
+      </div>
 
-      {/* Background radial glow */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(255,59,31,0.08) 0%, transparent 70%)',
-        }}
-      />
-
-      {/* SVG — connection lines and nodes */}
-      <svg
-        className="absolute inset-0 w-full h-full pointer-events-none"
-        viewBox="0 0 400 340"
-        preserveAspectRatio="xMidYMid meet"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* Grid faint */}
-        {[60,120,180,240,300,360].map(x => <line key={`gx${x}`} x1={x} y1="0" x2={x} y2="340" stroke="rgba(255,59,31,0.04)" strokeWidth="1"/>)}
-        {[60,120,180,240,300].map(y => <line key={`gy${y}`} x1="0" y1={y} x2="400" y2={y} stroke="rgba(255,59,31,0.04)" strokeWidth="1"/>)}
-
-        {/* Static connection lines */}
-        <line x1="80"  y1="100" x2="200" y2="170" stroke="rgba(255,59,31,0.12)" strokeWidth="1"/>
-        <line x1="200" y1="170" x2="310" y2="110" stroke="rgba(255,59,31,0.12)" strokeWidth="1"/>
-        <line x1="200" y1="170" x2="140" y2="255" stroke="rgba(255,59,31,0.12)" strokeWidth="1"/>
-        <line x1="200" y1="170" x2="290" y2="250" stroke="rgba(255,59,31,0.12)" strokeWidth="1"/>
-        <line x1="80"  y1="100" x2="140" y2="255" stroke="rgba(255,59,31,0.07)" strokeWidth="1" strokeDasharray="3 5"/>
-        <line x1="310" y1="110" x2="290" y2="250" stroke="rgba(255,59,31,0.07)" strokeWidth="1" strokeDasharray="3 5"/>
-
-        {/* Animated traces */}
-        <TraceLine d="M80,100 L200,170"  delay={0}    duration={2.0} />
-        <TraceLine d="M200,170 L310,110" delay={0.5}  duration={1.8} />
-        <TraceLine d="M200,170 L140,255" delay={1.0}  duration={2.2} />
-        <TraceLine d="M200,170 L290,250" delay={0.8}  duration={2.4} />
-
-        {/* Nodes */}
-        <GlowNode cx={200} cy={170} delay={0}   size={5} />
-        <GlowNode cx={80}  cy={100} delay={0.4} size={3.5} />
-        <GlowNode cx={310} cy={110} delay={0.8} size={3.5} />
-        <GlowNode cx={140} cy={255} delay={0.6} size={3.5} />
-        <GlowNode cx={290} cy={250} delay={1.0} size={3.5} />
-      </svg>
-
-      {/* Floating hardware cards */}
-      <HardwareCard
-        label="Ryzen 7 7800X3D"
-        sublabel="CPU · 8C / 16T"
-        icon="⚙️"
-        style={{ top: '4%', left: '2%' }}
-        floatDelay={0}
-        floatAmt={9}
-      />
-      <HardwareCard
-        label="RTX 4070 Ti"
-        sublabel="GPU · 12GB GDDR6X"
-        icon="🎮"
-        style={{ top: '4%', right: '2%' }}
-        floatDelay={0.8}
-        floatAmt={7}
-      />
-      <HardwareCard
-        label="32GB DDR5"
-        sublabel="RAM · 6000MHz"
-        icon="💾"
-        style={{ bottom: '10%', left: '4%' }}
-        floatDelay={1.4}
-        floatAmt={8}
-      />
-      <HardwareCard
-        label="2TB NVMe"
-        sublabel="SSD · Gen4"
-        icon="💿"
-        style={{ bottom: '10%', right: '4%' }}
-        floatDelay={0.5}
-        floatAmt={6}
-      />
-
-      {/* Central core badge */}
-      <motion.div
-        animate={{ scale: [1, 1.04, 1], boxShadow: ['0 0 20px rgba(255,59,31,0.2)', '0 0 36px rgba(255,59,31,0.4)', '0 0 20px rgba(255,59,31,0.2)'] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        className="relative z-10 flex flex-col items-center justify-center rounded-2xl px-6 py-4 text-center"
-        style={{
-          background:     'rgba(14,14,16,0.95)',
-          border:         '1px solid rgba(255,59,31,0.35)',
-          backdropFilter: 'blur(16px)',
-        }}
-      >
+      {/* Progress track */}
+      <div style={{
+        height: '3px',
+        borderRadius: '2px',
+        background: 'rgba(255,255,255,0.05)',
+        overflow: 'hidden',
+        position: 'relative',
+      }}>
         <motion.div
-          animate={{ opacity: [1, 0.4, 1] }}
-          transition={{ duration: 1.6, repeat: Infinity }}
-          className="w-2 h-2 rounded-full mb-3"
-          style={{ background: 'var(--red)', boxShadow: '0 0 8px rgba(255,59,31,0.8)' }}
-        />
-        <p
-          className="text-xs font-bold uppercase tracking-widest mb-0.5"
-          style={{ color: 'var(--red)', fontFamily: 'var(--font-display)' }}
+          style={{
+            height: '100%',
+            borderRadius: '2px',
+            background: 'linear-gradient(90deg, #ff3b1f, rgba(255,59,31,0.45))',
+            position: 'relative',
+          }}
+          initial={{ width: '0%' }}
+          animate={inView ? { width: `${percent}%` } : {}}
+          transition={{ duration: 0.85, delay, ease: [0.23, 1, 0.32, 1] }}
         >
-          BuildLab
-        </p>
-        <p style={{ fontSize: '0.6rem', color: 'var(--text-3)', fontFamily: 'monospace' }}>
-          SYSTEM ONLINE
-        </p>
-      </motion.div>
-
+          {/* Shimmer on bar */}
+          <motion.div
+            style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%)',
+              backgroundSize: '200% 100%',
+            }}
+            animate={inView ? { backgroundPosition: ['-200% 0', '300% 0'] } : {}}
+            transition={{ duration: 1.2, delay: delay + 0.3, ease: 'easeOut' }}
+          />
+        </motion.div>
+      </div>
     </div>
+  )
+}
+
+/* ── Specs data ─────────────────────────────────────────────────── */
+const SPECS = [
+  { Icon: IconCpu, label: 'Ryzen 7 7800X3D', sublabel: 'CPU · 8C/16T', percent: 92, delay: 0.36 },
+  { Icon: IconGpu, label: 'RTX 4070 Ti',     sublabel: 'GPU · 12GB',   percent: 88, delay: 0.48 },
+  { Icon: IconRam, label: '32GB DDR5-6000',  sublabel: 'RAM',           percent: 75, delay: 0.60 },
+  { Icon: IconSsd, label: '2TB NVMe Gen4',   sublabel: 'Storage',       percent: 62, delay: 0.72 },
+]
+
+/* ── Build card ─────────────────────────────────────────────────── */
+function BuildCard({ inView }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ delay: 0.2, duration: 0.38, ease: [0.23, 1, 0.32, 1] }}
+      style={{
+        position: 'relative',
+        background: 'var(--surface-2)',
+        border: '1px solid var(--border)',
+        borderRadius: '10px',
+        padding: '16px',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Ambient corner bloom */}
+      <div style={{
+        position: 'absolute', top: 0, right: 0,
+        width: '120px', height: '120px',
+        background: 'radial-gradient(circle at top right, rgba(255,59,31,0.06), transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Card header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '14px',
+        paddingBottom: '12px',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        gap: '8px',
+      }}>
+        <span style={{
+          fontSize: '10px',
+          fontWeight: 700,
+          fontFamily: 'var(--font-display)',
+          color: 'var(--text-2)',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+        }}>
+          Build Configuration
+        </span>
+
+        <motion.span
+          animate={{ opacity: [1, 0.25, 1] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
+            fontSize: '8.5px',
+            fontFamily: 'monospace',
+            color: 'var(--red)',
+            padding: '3px 8px',
+            border: '1px solid rgba(255,59,31,0.3)',
+            borderRadius: '3px',
+            letterSpacing: '0.12em',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+          }}
+        >
+          <span style={{
+            display: 'inline-block',
+            width: '5px', height: '5px', borderRadius: '50%',
+            background: 'var(--red)',
+            boxShadow: '0 0 5px rgba(255,59,31,0.8)',
+          }} />
+          LIVE
+        </motion.span>
+      </div>
+
+      {/* Spec rows */}
+      {SPECS.map((s, i) => (
+        <SpecRow key={s.label} {...s} isLast={i === SPECS.length - 1} inView={inView} />
+      ))}
+
+      {/* Corner circuit trace */}
+      <svg
+        style={{ position: 'absolute', bottom: 0, right: 0, pointerEvents: 'none', opacity: 0.07 }}
+        width="80" height="60" viewBox="0 0 80 60" fill="none"
+      >
+        <line x1="0"  y1="20" x2="50" y2="20" stroke="#ff3b1f" strokeWidth="1" />
+        <line x1="50" y1="20" x2="50" y2="60" stroke="#ff3b1f" strokeWidth="1" />
+        <line x1="22" y1="36" x2="80" y2="36" stroke="#ff3b1f" strokeWidth="1" />
+        <line x1="22" y1="36" x2="22" y2="60" stroke="#ff3b1f" strokeWidth="1" />
+        <circle cx="50" cy="20" r="2.5" fill="#ff3b1f" />
+        <circle cx="22" cy="36" r="2.5" fill="#ff3b1f" />
+      </svg>
+    </motion.div>
+  )
+}
+
+/* ── Main export ─────────────────────────────────────────────────── */
+export function AuthIllustration() {
+  const ref    = useRef()
+  const inView = useInView(ref, { once: true, margin: '-20px' })
+
+  return (
+    <>
+      <div ref={ref} className="auth-illustration">
+
+        {/* Metric strip */}
+        <div className="metric-strip">
+          <MetricCard label="Compatibility" value={98} suffix="%" delay={0.00} />
+          <MetricCard label="Components"   value={8}          delay={0.08} />
+          <MetricCard label="Perf. Tier"   value="HIGH"       delay={0.16} />
+        </div>
+
+        {/* Animated trace separator */}
+        <TraceSeparator />
+
+        {/* Build spec card */}
+        <BuildCard inView={inView} />
+
+      </div>
+
+      <style jsx>{`
+  .auth-illustration {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+  }
+
+  /* Metric strip: 3 equal columns on desktop */
+  .metric-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 100%;
+  }
+
+  /* Ensure all cards fit container */
+  .metric-strip > div {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Build card full width */
+  .auth-illustration .build-card {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px;
+  }
+
+  /* ── Mobile (≤ 480px) ─────────────────────────────────── */
+  @media (max-width: 480px) {
+    .metric-strip {
+      grid-template-columns: repeat(2, 1fr); /* 2 columns for small screens */
+      gap: 6px;
+    }
+
+    .auth-illustration .build-card {
+      padding: 12px;
+    }
+  }
+
+  /* ── Very small screens (≤ 360px) ─────────────────────── */
+  @media (max-width: 360px) {
+    .metric-strip {
+      grid-template-columns: 1fr; /* single column on tiny screens */
+      gap: 6px;
+    }
+
+    .auth-illustration p,
+    .auth-illustration span {
+      font-size: 0.85rem; /* scale down text */
+    }
+  }
+`}</style>
+    </>
   )
 }

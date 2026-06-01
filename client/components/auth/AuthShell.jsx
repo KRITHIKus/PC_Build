@@ -6,15 +6,10 @@ import { Logo } from '@/components/ui/Logo'
 import { AuthIllustration } from './AuthIllustration'
 import { APP_NAME } from '@/lib/constants'
 
-/* ─────────────────────────────────────────────────────────────
-   AuthShell — layout wrapper for Sign In / Sign Up
-   Desktop: 60% illustration left | 40% form right
-   Mobile:  logo → compact illustration → form card
-───────────────────────────────────────────────────────────── */
 export function AuthShell({ children, heading, subheading }) {
   return (
     <div
-      className="min-h-screen w-full flex flex-col lg:flex-row"
+      className="auth-shell min-h-screen w-full flex flex-col lg:flex-row"
       style={{ background: 'var(--bg)' }}
     >
       {/* ── Left panel — illustration (desktop) ─────────── */}
@@ -28,17 +23,12 @@ export function AuthShell({ children, heading, subheading }) {
           padding:      '40px 48px',
         }}
       >
-        {/* Brand */}
         <Logo size="md" />
-
-        {/* Illustration */}
         <div className="flex-1 flex items-center justify-center py-8">
           <div className="w-full max-w-lg">
             <AuthIllustration />
           </div>
         </div>
-
-        {/* Bottom message */}
         <div>
           <p
             className="text-2xl font-bold mb-2 leading-snug"
@@ -71,15 +61,8 @@ export function AuthShell({ children, heading, subheading }) {
           </Link>
         </div>
 
-        {/* Mobile compact illustration */}
-        <div
-          className="lg:hidden px-4 pt-4 pb-2"
-          style={{ maxHeight: '200px', overflow: 'hidden' }}
-        >
-          <div style={{ transform: 'scale(0.72)', transformOrigin: 'top center' }}>
-            <AuthIllustration />
-          </div>
-        </div>
+        {/* Remove compact illustration on mobile */}
+        <div className="lg:hidden" style={{ display: 'none' }} />
 
         {/* Form area — centered on desktop */}
         <div className="flex-1 flex items-center justify-center px-5 py-6 lg:py-0">
@@ -107,20 +90,130 @@ export function AuthShell({ children, heading, subheading }) {
 
             {/* Form card */}
             <div
-              className="rounded-2xl p-6 sm:p-8"
+              className="auth-card rounded-2xl p-6 sm:p-8"
               style={{
                 background: 'var(--surface-2)',
                 border:     '1px solid var(--border)',
               }}
             >
-              {/* Top red accent line */}
               <div style={{ position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px', background: 'linear-gradient(90deg,transparent,rgba(255,59,31,0.4),transparent)', pointerEvents: 'none' }} />
-
               {children}
             </div>
           </motion.div>
         </div>
       </div>
+
+      {/* ── Mobile animation background ───────────────────── */}
+      <style jsx>{`
+
+        /* ── Page shell ── */
+        @media (max-width: 1023px) {
+          .auth-shell {
+            position: relative;
+            overflow: hidden;
+            background: #0a0a0a;
+          }
+
+          /* ── Layer 1: slow rotating conic sweep behind everything ── */
+          .auth-shell::before {
+            content: '';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 200vmax;
+            height: 200vmax;
+            transform: translate(-50%, -50%);
+            background: conic-gradient(
+              from 0deg,
+              transparent 0deg,
+              rgba(255, 59, 31, 0.06) 40deg,
+              rgba(255, 59, 31, 0.13) 80deg,
+              transparent 120deg,
+              transparent 240deg,
+              rgba(255, 59, 31, 0.07) 300deg,
+              transparent 360deg
+            );
+            animation: conicSpin 18s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+          }
+
+          /* ── Layer 2: radial pulse that breathes from card center outward ── */
+          .auth-shell::after {
+            content: '';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 480px;
+            height: 480px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(
+              circle,
+              rgba(255, 59, 31, 0.22) 0%,
+              rgba(255, 59, 31, 0.10) 35%,
+              rgba(255, 59, 31, 0.03) 65%,
+              transparent 100%
+            );
+            animation: radialBreath 4s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+          }
+
+          @keyframes conicSpin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to   { transform: translate(-50%, -50%) rotate(360deg); }
+          }
+
+          @keyframes radialBreath {
+            0%, 100% {
+              transform: translate(-50%, -50%) scale(0.85);
+              opacity: 0.6;
+            }
+            50% {
+              transform: translate(-50%, -50%) scale(1.25);
+              opacity: 1;
+            }
+          }
+
+          /* ── Card: transparent glass so the animation bleeds through ── */
+          .auth-shell .auth-card {
+            position: relative;
+            z-index: 1;
+            background: rgba(10, 10, 10, 0.45) !important;
+            backdrop-filter: blur(20px) saturate(1.4) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(1.4) !important;
+            border: 1px solid rgba(255, 59, 31, 0.18) !important;
+            box-shadow:
+              0 0 0 1px rgba(255, 59, 31, 0.08) inset,
+              0 8px 40px rgba(0, 0, 0, 0.45),
+              0 0 80px rgba(255, 59, 31, 0.07);
+            animation: cardEdgeGlow 4s ease-in-out infinite;
+          }
+
+          /* Card border pulses subtly in sync with the radial behind it */
+          @keyframes cardEdgeGlow {
+            0%, 100% {
+              box-shadow:
+                0 0 0 1px rgba(255, 59, 31, 0.08) inset,
+                0 8px 40px rgba(0, 0, 0, 0.45),
+                0 0 60px rgba(255, 59, 31, 0.06);
+            }
+            50% {
+              box-shadow:
+                0 0 0 1px rgba(255, 59, 31, 0.22) inset,
+                0 8px 40px rgba(0, 0, 0, 0.5),
+                0 0 100px rgba(255, 59, 31, 0.13);
+            }
+          }
+
+          /* Ensure headings and content above card stay on top */
+          .auth-shell .mb-7 {
+            position: relative;
+            z-index: 1;
+          }
+        }
+      `}</style>
     </div>
   )
 }

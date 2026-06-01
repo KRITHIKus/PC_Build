@@ -7,6 +7,7 @@ import {
   getArticleBySlug,
   updateArticle,
   deleteArticle,
+  uploadImageToCloudinary
 } from "./learn.service.js";
 
 export const create = asyncHandler(async (req, res) => {
@@ -37,4 +38,12 @@ export const update = asyncHandler(async (req, res) => {
 export const remove = asyncHandler(async (req, res) => {
   await deleteArticle(req.params.id);
   sendSuccess(res, 200, "Article deleted");
+});
+
+export const uploadImage = asyncHandler(async (req, res) => {
+  if (!req.file) throw new Error("No file uploaded");
+
+  const uploadedData = await uploadImageToCloudinary(req.file.buffer, req.file.originalname);
+
+  res.status(200).json(uploadedData);
 });

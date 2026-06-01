@@ -1,6 +1,8 @@
 import Learn from "./learn.model.js";
 import { AppError } from "../../utils/appError.js";
 import { paginate, paginateMeta } from "../../utils/pagination.js";
+import { v2 as cloudinary } from "cloudinary";
+import streamifier from "streamifier";
 
 const generateSlug = (title) =>
   title
@@ -129,4 +131,25 @@ export const updateArticle = async (id, data) => {
 export const deleteArticle = async (id) => {
   const article = await Learn.findByIdAndDelete(id);
   if (!article) throw new AppError("Article not found", 404);
+};
+
+
+export const uploadImageToCloudinary = async (fileBuffer, originalName) => {
+  if (!fileBuffer) throw new AppError("No file provided", 400);
+
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "learn_articles" },
+      (error, result) => {
+        if (error) return reject(new AppError("Cloudinary upload failed", 500));
+        resolve({
+          coverImageUrl: result.secure_url,
+          fileName: originalName,
+          fileType: "image",
+        });
+      }
+    );
+
+    streamifier.createReadStream(fileBuffer).pipe(stream);
+  });
 };
